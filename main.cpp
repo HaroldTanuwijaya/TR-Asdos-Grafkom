@@ -1,10 +1,263 @@
 #include <GL/glut.h>
 #include <cmath>
+#include <vector>
+
+#ifndef M_PI
+#define M_PI 3.14159265359
+#endif
 
 // Variabel kamera
 float cameraAngle = 0.0f;
 float cameraDistance = 25.0f;
 float cameraHeight = 5.0f;
+bool isDragging = false;
+int lastMouseX = 0;
+int lastMouseY = 0;
+
+
+//draw sphere with custom color
+void drawColoredSphere(float radius, int slices = 16, int stacks = 16) {
+    glutSolidSphere(radius, slices, stacks);
+}
+void drawTwistedCylinder(float baseRadius, float topRadius, float height, int segments = 16) {
+    float angleStep = 2.0f * M_PI / segments;
+    float heightStep = height / 10; // Divide height into steps for twisting
+
+    glBegin(GL_TRIANGLE_STRIP);
+
+    for (int h = 0; h <= 10; h++) {
+        float currentHeight = h * heightStep;
+        float nextHeight = (h + 1) * heightStep;
+
+        // Twist factor - more twist as we go up
+        float twist = (currentHeight / height) * 0.5f; // Half rotation over height
+        float nextTwist = (nextHeight / height) * 0.5f;
+
+        // Radius interpolation with slight variation for bark texture
+        float currentRadius = baseRadius + (topRadius - baseRadius) * (currentHeight / height);
+        float nextRadius = baseRadius + (topRadius - baseRadius) * (nextHeight / height);
+
+        for (int i = 0; i <= segments; i++) {
+            float angle = i * angleStep;
+
+            // Add bark texture variation
+            float barkVariation = 0.9f + 0.1f * sin(angle * 3 + currentHeight * 0.1f);
+            float nextBarkVariation = 0.9f + 0.1f * sin(angle * 3 + nextHeight * 0.1f);
+
+            // Current ring
+            float x1 = (currentRadius * barkVariation) * cos(angle + twist);
+            float z1 = (currentRadius * barkVariation) * sin(angle + twist);
+
+            // Next ring
+            float x2 = (nextRadius * nextBarkVariation) * cos(angle + nextTwist);
+            float z2 = (nextRadius * nextBarkVariation) * sin(angle + nextTwist);
+
+            // Calculate normals for lighting
+            float nx1 = cos(angle + twist);
+            float nz1 = sin(angle + twist);
+            float nx2 = cos(angle + nextTwist);
+            float nz2 = sin(angle + nextTwist);
+
+            glNormal3f(nx1, 0, nz1);
+            glVertex3f(x1, currentHeight, z1);
+
+            if (h < 10) {
+                glNormal3f(nx2, 0, nz2);
+                glVertex3f(x2, nextHeight, z2);
+            }
+        }
+    }
+    glEnd();
+}
+
+// Helper function to draw a branch (tapered cylinder)
+void drawBranch(float length, float baseRadius, float topRadius, float bendAngle = 0.0f) {
+    glPushMatrix();
+
+    // Apply bend by rotating slightly
+    if (bendAngle != 0.0f) {
+        glRotatef(bendAngle, 0, 0, 1);
+    }
+
+    // Draw the branch cylinder
+    drawTwistedCylinder(baseRadius, topRadius, length, 12);
+
+    glPopMatrix();
+}
+
+// Function to set toon-shaded material properties
+void setToonMaterial(float r, float g, float b, float shininess = 32.0f) {
+    float ambient[] = {r * 0.3f, g * 0.3f, b * 0.3f, 1.0f};
+    float diffuse[] = {r, g, b, 1.0f};
+    float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+}
+
+// Main function to render the 3D cartoon tree
+void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glScalef(scale, scale, scale);
+
+    // --- TRUNK ---
+    setToonMaterial(0.65f, 0.32f, 0.15f, 32.0f);
+
+    // Main trunk (twisted)
+    glPushMatrix();
+    drawTwistedCylinder(3.0f, 2.0f, 12.0f, 20);
+    glPopMatrix();
+
+    // --- MAIN BRANCHES ---
+    setToonMaterial(0.35f, 0.18f, 0.08f, 16.0f); // Slightly darker brown for branches
+
+    // Branch 1 - Left
+    glPushMatrix();
+    glTranslatef(-1.5f, 10.0f, 0);
+    glRotatef(-35, 0, 0, 1);
+    glRotatef(20, 0, 1, 0);
+    drawBranch(6.0f, 1.5f, 0.8f, 10.0f);
+    glPopMatrix();
+
+    // Branch 2 - Right
+    glPushMatrix();
+    glTranslatef(1.5f, 10.5f, 0);
+    glRotatef(40, 0, 0, 1);
+    glRotatef(-25, 0, 1, 0);
+    drawBranch(5.5f, 1.4f, 0.7f, -8.0f);
+    glPopMatrix();
+
+    // Branch 3 - Back
+    glPushMatrix();
+    glTranslatef(0, 11.0f, -1.0f);
+    glRotatef(15, 1, 0, 0);
+    glRotatef(-10, 0, 0, 1);
+    drawBranch(5.0f, 1.3f, 0.6f, 5.0f);
+    glPopMatrix();
+
+    // Branch 4 - Front Right
+    glPushMatrix();
+    glTranslatef(0.8f, 9.5f, 1.2f);
+    glRotatef(-20, 1, 0, 0);
+    glRotatef(25, 0, 0, 1);
+    drawBranch(4.5f, 1.2f, 0.5f, -12.0f);
+    glPopMatrix();
+
+    // Branch 5 - Front Left
+    glPushMatrix();
+    glTranslatef(-0.8f, 9.8f, 1.0f);
+    glRotatef(-15, 1, 0, 0);
+    glRotatef(-30, 0, 0, 1);
+    drawBranch(4.0f, 1.1f, 0.4f, 15.0f);
+    glPopMatrix();
+
+    // --- FOLIAGE CANOPY ---
+    // Create multiple overlapping spheres for fluffy appearance
+
+    // Back layer spheres - Dark green
+    setToonMaterial(0.1f, 0.4f, 0.1f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-3.5f, 15.0f, -2.0f);
+    drawColoredSphere(3.2f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(3.0f, 15.5f, -1.5f);
+    drawColoredSphere(3.0f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 16.0f, -3.0f);
+    drawColoredSphere(2.8f, 12, 10);
+    glPopMatrix();
+
+    // Middle layer spheres - Medium green
+    setToonMaterial(0.2f, 0.6f, 0.2f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-2.5f, 16.0f, -0.5f);
+    drawColoredSphere(3.5f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.8f, 16.5f, 0.2f);
+    drawColoredSphere(3.3f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.5f, 17.0f, -1.0f);
+    drawColoredSphere(3.0f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-1.0f, 15.5f, 1.5f);
+    drawColoredSphere(2.7f, 14, 12);
+    glPopMatrix();
+
+    // Front layer spheres - Bright green
+    setToonMaterial(0.3f, 0.8f, 0.3f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-1.5f, 16.5f, 1.0f);
+    drawColoredSphere(3.8f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.0f, 17.0f, 1.5f);
+    drawColoredSphere(3.6f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 18.0f, 0.5f);
+    drawColoredSphere(3.2f, 16, 14);
+    glPopMatrix();
+
+    // Top highlight spheres - Very bright green
+    setToonMaterial(0.5f, 1.0f, 0.5f, 128.0f);
+
+    glPushMatrix();
+    glTranslatef(-0.5f, 17.5f, 2.0f);
+    drawColoredSphere(2.5f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(1.5f, 18.0f, 2.2f);
+    drawColoredSphere(2.3f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.8f, 19.0f, 1.0f);
+    drawColoredSphere(2.0f, 16, 14);
+    glPopMatrix();
+
+    // Small detail spheres for extra fluffiness
+    setToonMaterial(0.4f, 0.9f, 0.4f, 128.0f);
+
+    glPushMatrix();
+    glTranslatef(-2.0f, 18.0f, 2.5f);
+    drawColoredSphere(1.8f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.5f, 18.5f, 2.8f);
+    drawColoredSphere(1.5f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 19.5f, 2.0f);
+    drawColoredSphere(1.2f, 12, 10);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
+
+
+
 
 // ========== UTILITAS ==========
 void drawBox(float x, float y, float z, float w, float h, float d) {
@@ -59,19 +312,20 @@ void drawCenterPillar() {
 }
 
 void drawSideWall(float x) {
-    glColor3f(0.75f, 0.60f, 0.45f);
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+
     drawBox(x - 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 drawBox(x + 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 }
 
 void drawSideWall2(float x) {
-     glColor3f(0.75f, 0.60f, 0.45f);
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
     drawBox(x - 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 drawBox(x + 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 }
 
 void drawSmallPillar(float x, float z) {
-    glColor3f(0.95f, 0.95f, 0.95f);
+    setToonMaterial(0.95f, 0.95f, 0.95f, 32.0f);
     drawCylinder(x, 0.0f, z, 0.2f, 11.5f); // lebih tinggi
 
     glColor3f(0.90f, 0.90f, 0.90f);
@@ -79,7 +333,8 @@ void drawSmallPillar(float x, float z) {
 }
 
 void drawConnectingBeam() {
-    glColor3f(0.85f, 0.85f, 0.85f);
+    setToonMaterial(0.85f, 0.85f, 0.85f, 32.0f);
+
     drawBox(0, 12.0f, -2.5f, 22.0f, 0.6f, 1.0f);
     drawBox(-9.5f, 12.0f, -2.5f, 1.0f, 0.6f, 1.0f);
     drawBox(9.5f, 12.0f, -2.5f, 1.0f, 0.6f, 1.0f);
@@ -141,11 +396,17 @@ void display() {
 
     // Pilar putih kiri-kanan (3 tiap sisi)
     drawSmallPillar(-11.5f, -1.5f);
-drawSmallPillar(-10.0f, -1.0f);
-drawSmallPillar(-8.5f, -1.0f);
-drawSmallPillar(8.5f, -1.0);
-drawSmallPillar(10.0f, -1.0f);
-drawSmallPillar(11.5f, -1.0f);
+    drawSmallPillar(-10.0f, -1.0f);
+    drawSmallPillar(-8.5f, -1.0f);
+    drawSmallPillar(8.5f, -1.0);
+    drawSmallPillar(10.0f, -1.0f);
+    drawSmallPillar(11.5f, -1.0f);
+
+    //pohon gede kiri
+    renderCartoonTree3D(-18, 0, 3, 1.0f);
+    //pohon gede kanan
+    renderCartoonTree3D(18, 0, 3, 1.0f);
+
 
     drawDecorations();
     glutSwapBuffers();
@@ -166,13 +427,68 @@ void keyboard(unsigned char key, int, int) {
     glutPostRedisplay();
 }
 
+void specialKey(int key, int, int) {
+    switch (key) {
+        case GLUT_KEY_LEFT:  cameraAngle -= 5; break;  // like 'a'
+        case GLUT_KEY_RIGHT: cameraAngle += 5; break;  // like 'd'
+        case GLUT_KEY_UP:    cameraDistance -= 2; break; // like 'w'
+        case GLUT_KEY_DOWN:  cameraDistance += 2; break; // like 's'
+    }
+    glutPostRedisplay();
+}
+
+
+//mouse movement
+void mouseButton(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            isDragging = true;
+            lastMouseX = x;
+            lastMouseY = y;
+        } else {
+            isDragging = false;
+        }
+    }
+
+    // Scroll wheel zoom
+    if (state == GLUT_DOWN) {
+        if (button == 3) { // Scroll up
+            cameraDistance -= 1.0f;
+            if (cameraDistance < 5.0f) cameraDistance = 5.0f;
+        } else if (button == 4) { // Scroll down
+            cameraDistance += 1.0f;
+            if (cameraDistance > 80.0f) cameraDistance = 80.0f;
+        }
+        glutPostRedisplay();
+    }
+}
+
+
+void mouseMotion(int x, int y) {
+    if (isDragging) {
+        int dx = x - lastMouseX;
+        int dy = y - lastMouseY;
+
+        cameraAngle += dx * 0.5f;     // rotate left/right
+        cameraHeight += dy * 0.1f;    // move up/down
+
+        lastMouseX = x;
+        lastMouseY = y;
+
+        glutPostRedisplay();
+    }
+}
+
+
+
+
 // ========== SETUP ==========
 void setup() {
     glClearColor(0.6f, 0.8f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    glEnable(GL_COLOR_MATERIAL);
+   // glEnable(GL_COLOR_MATERIAL);
 
     GLfloat lightPos[] = { 5, 15, 10, 1 };
     GLfloat ambient[] = { 0.4, 0.4, 0.4, 1 };
@@ -196,6 +512,9 @@ int main(int argc, char** argv) {
     setup();
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
+    glutSpecialFunc(specialKey);
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMotion);
     glutMainLoop();
     return 0;
 }
