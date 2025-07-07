@@ -294,24 +294,24 @@ void drawGround() {
 }
 
 void drawMainPillar(float x) {
-    glColor3f(0.75f, 0.60f, 0.45f); // Base
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Base
     drawBox(x, 1.0f, -4.0f, 2.5f, 2.0f, 6.0f);
 
-    glColor3f(0.78f, 0.63f, 0.48f); // Pilar utama
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Pilar utama
     drawBox(x, 6.0f, -4.0f, 2.2f, 10.0f, 5.0f);
 
-    glColor3f(0.80f, 0.65f, 0.50f); // Top
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Top
     drawBox(x, 11.5f, -4.0f, 2.6f, 1.0f, 5.2f);
 }
 
 void drawCenterPillar() {
-    glColor3f(0.78f, 0.63f, 0.48f);
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
     drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f); // lebih lebar dan dalam
 
-    glColor3f(0.85f, 0.70f, 0.55f); // Area logo
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Area logo
     drawBox(0, 10.0f, -2.3f, 2.0f, 2.0f, 0.3f);
 
-    glColor3f(0.80f, 0.65f, 0.50f); // Top
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Top
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
 }
 
@@ -319,6 +319,12 @@ void drawSideWall(float x, float y, float z) {
     setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
 
     drawBox(x, y, z, 5.6f, 16.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
+}
+
+void drawSideWallAbove(float x, float y, float z) {
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+
+    drawBox(x, y, z, 5.6f, 7.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
 
@@ -389,7 +395,9 @@ void display() {
 
 
     drawSideWall(16.0f, 4.0f, -4.0f);
+    drawSideWallAbove(12.5f, 8.5f, -4.0f);
     drawSideWall(-16.0f, 4.0f, -4.0f);
+    drawSideWallAbove(-12.5f, 8.5f, -4.0f);
 
 
 
