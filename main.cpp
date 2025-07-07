@@ -315,18 +315,12 @@ void drawCenterPillar() {
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
 }
 
-void drawSideWall(float x) {
+void drawSideWall(float x, float y, float z) {
     setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
 
-    drawBox(x - 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
-drawBox(x + 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
+    drawBox(x, y, z, 5.6f, 16.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
-void drawSideWall2(float x) {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
-    drawBox(x - 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
-drawBox(x + 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
-}
 
 void drawSmallPillar(float x, float z) {
     setToonMaterial(0.95f, 0.95f, 0.95f, 32.0f);
@@ -373,14 +367,6 @@ void drawDecorations() {
     glPopMatrix();
 }
 
-void drawBackground() {
-    glColor3f(0.3f, 0.5f, 0.2f);
-    for (int i = -2; i <= 2; i++)
-        drawBox(i * 8.0f, 6.0f, -25.0f, 2.0f, 8.0f, 2.0f);
-
-    glColor3f(0.7f, 0.8f, 0.9f);
-    drawBox(0.0f, 15.0f, -40.0f, 100.0f, 40.0f, 1.0f);
-}
 
 // ========== DISPLAY ==========
 void display() {
@@ -391,7 +377,6 @@ void display() {
     float camZ = cameraDistance * cos(cameraAngle * M_PI / 180.0f);
     gluLookAt(camX, cameraHeight, camZ, 0, 5, -3, 0, 1, 0);
 
-    drawBackground();
     drawGround();
 
     drawMainPillar(-9.0f);
@@ -403,18 +388,18 @@ void display() {
     drawConnectingBeamAt(.0f, 12.0f, -5.5f); // same default position
 
 
-    drawSideWall(-11.0f);
-    drawSideWall(11.0f);
-     drawSideWall2(11.0f);
-     drawSideWall2(11.0f);
+    drawSideWall(16.0f, 4.0f, -4.0f);
+    drawSideWall(-16.0f, 4.0f, -4.0f);
+
+
 
     // Pilar putih kiri-kanan (3 tiap sisi)
-    drawSmallPillar(-14.5f, -1.5f);
-    drawSmallPillar(-13.0f, -1.0f);
-    drawSmallPillar(-11.5f, -1.0f);
-    drawSmallPillar(11.5f, -1.0);
-    drawSmallPillar(13.0f, -1.0f);
-    drawSmallPillar(14.5f, -1.0f);
+    drawSmallPillar(-16.5f, -1.5f);
+    drawSmallPillar(-15.0f, -1.0f);
+    drawSmallPillar(-13.5f, -1.0f);
+    drawSmallPillar(13.5f, -1.0);
+    drawSmallPillar(15.0f, -1.0f);
+    drawSmallPillar(16.5f, -1.0f);
 
     //pohon gede kiri
     renderCartoonTree3D(-18, 0, 3, 1.0f);
