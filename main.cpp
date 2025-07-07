@@ -2,9 +2,16 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
+#include <windows.h>
+#include <iostream>
 #ifndef M_PI
 #define M_PI 3.14159265359
 #endif
+
+#include "texture_loader.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 // Variabel kamera
 float cameraAngle = 0.0f;
@@ -16,7 +23,35 @@ int lastMouseY = 0;
 
 //Varibel warna
 GLuint pillarTexture;
+GLuint logoTexture;
 
+//function buat gambar
+void setupWorkingDirectory() {
+    const char* path = "C:\\Users\\ASUS\\Documents\\C programs\\TR_ASDOS_GRAFKOM\\bin\\Debug";
+    if (!SetCurrentDirectoryA(path)) {
+        std::cerr << "Failed to changed Directory: " << path << std::endl;
+    }
+}
+
+// Debug isi folder
+void debugFolder() {
+    char cwd[MAX_PATH];
+    GetCurrentDirectoryA(MAX_PATH, cwd);
+    std::cout << "Current working directory: " << cwd << std::endl;
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile("texture\\*.*", &findFileData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        std::cout << "Folder 'texture' was not found." << std::endl;
+    } else {
+        std::cout << "Folder 'texture' filled:" << std::endl;
+        do {
+            if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                std::cout << " - " << findFileData.cFileName << std::endl;
+            }
+        } while (FindNextFile(hFind, &findFileData));
+        FindClose(hFind);
+    }
+}
 
 
 //draw sphere with custom color
@@ -271,6 +306,70 @@ void drawBox(float x, float y, float z, float w, float h, float d) {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
+void drawTexturedCircle(float radius, GLuint textureID) {
+    // Save current lighting state
+    GLboolean lightingEnabled = glIsEnabled(GL_LIGHTING);
+    GLboolean textureEnabled = glIsEnabled(GL_TEXTURE_2D);
+
+    // Enable texturing
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Set texture environment mode to replace for pure texture display
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Temporarily disable lighting for pure texture display
+    glDisable(GL_LIGHTING);
+
+    glBegin(GL_TRIANGLE_FAN);
+    glTexCoord2f(0.5f, 0.5f); // Center of texture
+    glVertex3f(0.0f, 0.0f, 0.0f); // Center of circle
+
+    for (int angle = 0; angle <= 360; angle += 10) {
+        float rad = angle * M_PI / 180.0f;
+        float x = radius * cos(rad);
+        float y = radius * sin(rad);
+
+        // Proper texture coordinates (0 to 1 range)
+        float u = (cos(rad) + 1.0f) * 0.5f;
+        float v = (sin(rad) + 1.0f) * 0.5f;
+
+        glTexCoord2f(u, v);
+        glVertex3f(x, y, 0.0f);
+    }
+    glEnd();
+
+    // Restore previous states
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (!textureEnabled) glDisable(GL_TEXTURE_2D);
+    if (lightingEnabled) glEnable(GL_LIGHTING);
+}
+
+// Alternative: Simple textured quad (easier to debug)
+void drawTexturedQuad(float size, GLuint textureID) {
+    // Save current lighting state
+    GLboolean lightingEnabled = glIsEnabled(GL_LIGHTING);
+    GLboolean textureEnabled = glIsEnabled(GL_TEXTURE_2D);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glDisable(GL_LIGHTING);
+
+    float half = size * 0.5f;
+
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(-half, -half, 0.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f( half, -half, 0.0f);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f( half,  half, 0.0f);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(-half,  half, 0.0f);
+    glEnd();
+
+    // Restore previous states
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (!textureEnabled) glDisable(GL_TEXTURE_2D);
+    if (lightingEnabled) glEnable(GL_LIGHTING);
+}
 
 void drawCylinder(float x, float y, float z, float radius, float height) {
     glPushMatrix();
@@ -281,6 +380,54 @@ void drawCylinder(float x, float y, float z, float radius, float height) {
     gluDeleteQuadric(quad);
     glPopMatrix();
 }
+void drawLogo(float x, float y, float z, float size, float rotX = 0, float rotY = 0, float rotZ = 0, bool useCircle = false) {
+    if (logoTexture == 0) {
+        std::cout << "Warning: logoTexture is 0, texture not loaded!" << std::endl;
+        return;
+    }
+
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // Apply rotations in order: X, Y, Z
+    if (rotX != 0) glRotatef(rotX, 1, 0, 0);
+    if (rotY != 0) glRotatef(rotY, 0, 1, 0);
+    if (rotZ != 0) glRotatef(rotZ, 0, 0, 1);
+
+    if (useCircle) {
+        drawTexturedCircle(size * 0.5f, logoTexture);  // radius is half the size
+    } else {
+        drawTexturedQuad(size, logoTexture);
+    }
+
+    glPopMatrix();
+}
+
+void renderStrokeTextAtBold(const char* text, float x, float y, float z,
+                            float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f,
+                            float scale = 0.01f, int weight = 2) {
+    for (int i = 0; i < weight; ++i) {
+        for (int j = 0; j < weight; ++j) {
+            glPushMatrix();
+
+            glTranslatef(x + i * 0.001f, y + j * 0.001f, z);  // Slight offset
+            glRotatef(rotX, 1, 0, 0);
+            glRotatef(rotY, 0, 1, 0);
+            glRotatef(rotZ, 0, 0, 1);
+            glScalef(scale, scale, scale);
+
+            for (const char* c = text; *c != '\0'; ++c) {
+                glutStrokeCharacter(GLUT_STROKE_ROMAN, *c);
+            }
+
+            glPopMatrix();
+        }
+    }
+}
+
+
+
+
 
 // ========== KOMPONEN UTAMA ==========
 
@@ -306,13 +453,27 @@ void drawMainPillar(float x) {
 
 void drawCenterPillar() {
     setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
-    drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f); // lebih lebar dan dalam
+    drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Area logo
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
     drawBox(0, 10.0f, -2.3f, 2.0f, 2.0f, 0.3f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Top
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
+
+
+    // Parameters: x, y, z, size, rotX, rotY, rotZ, useCircle
+     drawLogo(0.0f, 14.5f, -1.1f, 3.0f, 180, 0, 0, true);  // Front face
+     renderStrokeTextAtBold("UNIVERSITAS KRISTEN",
+                   -2.0f, 12.1f, -1.1f, //posisi x,y,z
+                   0, 0, 0,    // Rotasi X, Y, Z
+                   0.003f,20);              // Skala teks
+
+     renderStrokeTextAtBold("SATYA WACANA",
+                   -2.0f, 11.5f, -1.1f, //posisi x,y,z
+                   0, 0, 0,    // Rotasi X, Y, Z
+                   0.004f,20);              // Skala teks
+
 }
 
 void drawSideWall(float x, float y, float z) {
@@ -495,8 +656,14 @@ void setup() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    glEnable(GL_TEXTURE_2D);
-   // glEnable(GL_COLOR_MATERIAL);
+
+    // Load texture and check for errors
+    logoTexture = loadTexture("texture/logo_uksw.png");
+    if (logoTexture == 0) {
+        std::cerr << "Failed to load logo texture!" << std::endl;
+    } else {
+        std::cout << "Logo texture loaded successfully with ID: " << logoTexture << std::endl;
+    }
 
     GLfloat lightPos[] = { 5, 15, 10, 1 };
     GLfloat ambient[] = { 0.4, 0.4, 0.4, 1 };
@@ -515,7 +682,10 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1000, 750);
-    glutCreateWindow("Gerbang UKSW 3D - Final Revisi");
+    glutCreateWindow("BENTENG TAKSESHI UKSW 3D - Final Revisi");
+
+    setupWorkingDirectory();
+    debugFolder();
 
     setup();
     glutDisplayFunc(display);
