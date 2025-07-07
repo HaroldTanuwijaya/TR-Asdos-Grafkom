@@ -8,6 +8,12 @@ Project membuat gedung bertema SALATIGA, jadi tema yang akan dibikin adalah bent
     bisa dikasih ke setiap function yang berhubungan dengan pembuatan object.
 - 
 
+## TO DO LIST :
+- trotoar
+- pagar kecil sekitar benteng
+- background low poly
+- texture benteng(optional)
+
 ## CATATAN PENTING : 
 - Untuk saat ini kita refactor setiap object yang masih pake GLcolor ke setToonMaterials aja.
 
