@@ -332,13 +332,19 @@ void drawSmallPillar(float x, float z) {
     drawBox(x, 11.7f, z, 0.5f, 0.5f, 0.5f);
 }
 
-void drawConnectingBeam() {
+void drawConnectingBeamAt(float x, float y, float z) {
     setToonMaterial(0.85f, 0.85f, 0.85f, 32.0f);
 
-    drawBox(0, 12.0f, -2.5f, 22.0f, 0.6f, 1.0f);
-    drawBox(-9.5f, 12.0f, -2.5f, 1.0f, 0.6f, 1.0f);
-    drawBox(9.5f, 12.0f, -2.5f, 1.0f, 0.6f, 1.0f);
+    // Main beam (long horizontal)
+    drawBox(x, y, z, 22.0f, 0.6f, 1.0f);
+
+    // Left connector
+    drawBox(x - 9.5f, y, z, 1.0f, 0.6f, 1.0f);
+
+    // Right connector
+    drawBox(x + 9.5f, y, z, 1.0f, 0.6f, 1.0f);
 }
+
 
 void drawDecorations() {
     // Ornamen kecil di pilar tengah
@@ -387,7 +393,8 @@ void display() {
     drawMainPillar(-9.0f);
     drawMainPillar(9.0f);
     drawCenterPillar();
-    drawConnectingBeam();
+    drawConnectingBeamAt(0.0f, 12.0f, -2.5f); // same default position
+
 
     drawSideWall(-11.0f);
     drawSideWall(11.0f);
