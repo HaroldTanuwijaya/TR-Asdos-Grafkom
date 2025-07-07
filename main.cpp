@@ -14,6 +14,10 @@ bool isDragging = false;
 int lastMouseX = 0;
 int lastMouseY = 0;
 
+//Varibel warna
+GLuint pillarTexture;
+
+
 
 //draw sphere with custom color
 void drawColoredSphere(float radius, int slices = 16, int stacks = 16) {
@@ -498,6 +502,7 @@ void setup() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+    glEnable(GL_TEXTURE_2D);
    // glEnable(GL_COLOR_MATERIAL);
 
     GLfloat lightPos[] = { 5, 15, 10, 1 };
