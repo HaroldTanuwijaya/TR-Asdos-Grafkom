@@ -318,6 +318,11 @@ void drawSideWall(float x) {
 drawBox(x + 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 }
 
+void drawSideWall2(float x) {
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    drawBox(x - 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
+drawBox(x + 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
+}
 
 void drawSmallPillar(float x, float z) {
     setToonMaterial(0.95f, 0.95f, 0.95f, 32.0f);
