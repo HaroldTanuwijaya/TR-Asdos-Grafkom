@@ -318,11 +318,6 @@ void drawSideWall(float x) {
 drawBox(x + 1.2f, 3.0f, -4.0f, 1.6f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
 }
 
-void drawSideWall2(float x) {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
-    drawBox(x - 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
-drawBox(x + 1.2f, 3.0f, -4.0f, 2.0f, 16.0f, 4.0f); // dimundurkan dan dipendekkan
-}
 
 void drawSmallPillar(float x, float z) {
     setToonMaterial(0.95f, 0.95f, 0.95f, 32.0f);
@@ -336,7 +331,7 @@ void drawConnectingBeamAt(float x, float y, float z) {
     setToonMaterial(0.85f, 0.85f, 0.85f, 32.0f);
 
     // Main beam (long horizontal)
-    drawBox(x, y, z, 22.0f, 0.6f, 1.0f);
+    drawBox(x, y, z, 22.0f, 0.6f, 0.5f);
 
     // Left connector
     drawBox(x - 9.5f, y, z, 1.0f, 0.6f, 1.0f);
@@ -394,6 +389,9 @@ void display() {
     drawMainPillar(9.0f);
     drawCenterPillar();
     drawConnectingBeamAt(0.0f, 12.0f, -2.5f); // same default position
+    drawConnectingBeamAt(.0f, 12.0f, -3.5f); // same default position
+    drawConnectingBeamAt(.0f, 12.0f, -4.5f); // same default position
+    drawConnectingBeamAt(.0f, 12.0f, -5.5f); // same default position
 
 
     drawSideWall(-11.0f);
@@ -402,12 +400,12 @@ void display() {
      drawSideWall2(11.0f);
 
     // Pilar putih kiri-kanan (3 tiap sisi)
-    drawSmallPillar(-11.5f, -1.5f);
-    drawSmallPillar(-10.0f, -1.0f);
-    drawSmallPillar(-8.5f, -1.0f);
-    drawSmallPillar(8.5f, -1.0);
-    drawSmallPillar(10.0f, -1.0f);
-    drawSmallPillar(11.5f, -1.0f);
+    drawSmallPillar(-14.5f, -1.5f);
+    drawSmallPillar(-13.0f, -1.0f);
+    drawSmallPillar(-11.5f, -1.0f);
+    drawSmallPillar(11.5f, -1.0);
+    drawSmallPillar(13.0f, -1.0f);
+    drawSmallPillar(14.5f, -1.0f);
 
     //pohon gede kiri
     renderCartoonTree3D(-18, 0, 3, 1.0f);
