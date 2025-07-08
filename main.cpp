@@ -26,6 +26,11 @@ int lastMouseY = 0;
 GLuint pillarTexture;
 GLuint logoTexture;
 
+//light variable
+bool lampLightOn = true;  // Global variable to control lamp lighting
+GLuint lampLightID = GL_LIGHT1;  // Use LIGHT1 for the lamp (LIGHT0 is already used)
+
+
 //function buat gambar
 void setupWorkingDirectory() {
     const char* path = "C:\\Users\\ASUS\\Documents\\C programs\\TR_ASDOS_GRAFKOM\\bin\\Debug";
@@ -54,6 +59,60 @@ void debugFolder() {
     }
 }
 
+//supporter function
+void drawTaperedCylinder(float bottomRadius, float topRadius, float height, int segments = 16) {
+    float angleStep = 2.0f * M_PI / segments;
+
+    glBegin(GL_TRIANGLE_STRIP);
+
+    for (int i = 0; i <= segments; i++) {
+        float angle = i * angleStep;
+
+        // Bottom ring
+        float x1 = bottomRadius * cos(angle);
+        float z1 = bottomRadius * sin(angle);
+
+        // Top ring
+        float x2 = topRadius * cos(angle);
+        float z2 = topRadius * sin(angle);
+
+        // Calculate normals for smooth lighting
+        float nx = cos(angle);
+        float nz = sin(angle);
+
+        glNormal3f(nx, 0, nz);
+        glVertex3f(x1, 0, z1);
+
+        glNormal3f(nx, 0, nz);
+        glVertex3f(x2, height, z2);
+    }
+
+    glEnd();
+
+    // Draw bottom cap
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0, -1, 0);
+    glVertex3f(0, 0, 0);
+    for (int i = 0; i <= segments; i++) {
+        float angle = i * angleStep;
+        float x = bottomRadius * cos(angle);
+        float z = bottomRadius * sin(angle);
+        glVertex3f(x, 0, z);
+    }
+    glEnd();
+
+    // Draw top cap
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0, 1, 0);
+    glVertex3f(0, height, 0);
+    for (int i = 0; i <= segments; i++) {
+        float angle = i * angleStep;
+        float x = topRadius * cos(angle);
+        float z = topRadius * sin(angle);
+        glVertex3f(x, height, z);
+    }
+    glEnd();
+}
 
 //draw sphere with custom color
 void drawColoredSphere(float radius, int slices = 16, int stacks = 16) {
@@ -126,173 +185,15 @@ void drawBranch(float length, float baseRadius, float topRadius, float bendAngle
 }
 
 // Function to set toon-shaded material properties
-void setToonMaterial(float r, float g, float b, float shininess = 32.0f) {
+void setToonMaterial(float r, float g, float b, float shininess = 0.0f) {
     float ambient[] = {r * 0.3f, g * 0.3f, b * 0.3f, 1.0f};
     float diffuse[] = {r, g, b, 1.0f};
-    float specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float specular[] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-}
-
-// Main function to render the 3D cartoon tree
-void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-    glScalef(scale, scale, scale);
-
-    // --- TRUNK ---
-    setToonMaterial(0.65f, 0.32f, 0.15f, 32.0f);
-
-    // Main trunk (twisted)
-    glPushMatrix();
-    drawTwistedCylinder(3.0f, 2.0f, 12.0f, 20);
-    glPopMatrix();
-
-    // --- MAIN BRANCHES ---
-    setToonMaterial(0.35f, 0.18f, 0.08f, 16.0f); // Slightly darker brown for branches
-
-    // Branch 1 - Left
-    glPushMatrix();
-    glTranslatef(-1.5f, 10.0f, 0);
-    glRotatef(-35, 0, 0, 1);
-    glRotatef(20, 0, 1, 0);
-    drawBranch(6.0f, 1.5f, 0.8f, 10.0f);
-    glPopMatrix();
-
-    // Branch 2 - Right
-    glPushMatrix();
-    glTranslatef(1.5f, 10.5f, 0);
-    glRotatef(40, 0, 0, 1);
-    glRotatef(-25, 0, 1, 0);
-    drawBranch(5.5f, 1.4f, 0.7f, -8.0f);
-    glPopMatrix();
-
-    // Branch 3 - Back
-    glPushMatrix();
-    glTranslatef(0, 11.0f, -1.0f);
-    glRotatef(15, 1, 0, 0);
-    glRotatef(-10, 0, 0, 1);
-    drawBranch(5.0f, 1.3f, 0.6f, 5.0f);
-    glPopMatrix();
-
-    // Branch 4 - Front Right
-    glPushMatrix();
-    glTranslatef(0.8f, 9.5f, 1.2f);
-    glRotatef(-20, 1, 0, 0);
-    glRotatef(25, 0, 0, 1);
-    drawBranch(4.5f, 1.2f, 0.5f, -12.0f);
-    glPopMatrix();
-
-    // Branch 5 - Front Left
-    glPushMatrix();
-    glTranslatef(-0.8f, 9.8f, 1.0f);
-    glRotatef(-15, 1, 0, 0);
-    glRotatef(-30, 0, 0, 1);
-    drawBranch(4.0f, 1.1f, 0.4f, 15.0f);
-    glPopMatrix();
-
-    // --- FOLIAGE CANOPY ---
-    // Create multiple overlapping spheres for fluffy appearance
-
-    // Back layer spheres - Dark green
-    setToonMaterial(0.1f, 0.4f, 0.1f, 64.0f);
-
-    glPushMatrix();
-    glTranslatef(-3.5f, 15.0f, -2.0f);
-    drawColoredSphere(3.2f, 12, 10);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(3.0f, 15.5f, -1.5f);
-    drawColoredSphere(3.0f, 12, 10);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0, 16.0f, -3.0f);
-    drawColoredSphere(2.8f, 12, 10);
-    glPopMatrix();
-
-    // Middle layer spheres - Medium green
-    setToonMaterial(0.2f, 0.6f, 0.2f, 64.0f);
-
-    glPushMatrix();
-    glTranslatef(-2.5f, 16.0f, -0.5f);
-    drawColoredSphere(3.5f, 14, 12);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(2.8f, 16.5f, 0.2f);
-    drawColoredSphere(3.3f, 14, 12);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0.5f, 17.0f, -1.0f);
-    drawColoredSphere(3.0f, 14, 12);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(-1.0f, 15.5f, 1.5f);
-    drawColoredSphere(2.7f, 14, 12);
-    glPopMatrix();
-
-    // Front layer spheres - Bright green
-    setToonMaterial(0.3f, 0.8f, 0.3f, 64.0f);
-
-    glPushMatrix();
-    glTranslatef(-1.5f, 16.5f, 1.0f);
-    drawColoredSphere(3.8f, 16, 14);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(2.0f, 17.0f, 1.5f);
-    drawColoredSphere(3.6f, 16, 14);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0, 18.0f, 0.5f);
-    drawColoredSphere(3.2f, 16, 14);
-    glPopMatrix();
-
-    // Top highlight spheres - Very bright green
-    setToonMaterial(0.5f, 1.0f, 0.5f, 128.0f);
-
-    glPushMatrix();
-    glTranslatef(-0.5f, 17.5f, 2.0f);
-    drawColoredSphere(2.5f, 16, 14);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(1.5f, 18.0f, 2.2f);
-    drawColoredSphere(2.3f, 16, 14);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0.8f, 19.0f, 1.0f);
-    drawColoredSphere(2.0f, 16, 14);
-    glPopMatrix();
-
-    // Small detail spheres for extra fluffiness
-    setToonMaterial(0.4f, 0.9f, 0.4f, 128.0f);
-
-    glPushMatrix();
-    glTranslatef(-2.0f, 18.0f, 2.5f);
-    drawColoredSphere(1.8f, 12, 10);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(2.5f, 18.5f, 2.8f);
-    drawColoredSphere(1.5f, 12, 10);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0, 19.5f, 2.0f);
-    drawColoredSphere(1.2f, 12, 10);
-    glPopMatrix();
-
-    glPopMatrix();
 }
 
 
@@ -521,6 +422,272 @@ void drawConnectingBeamAt(float x, float y, float z) {
     drawBox(x + 9.5f, y, z, 1.0f, 0.6f, 1.0f);
 }
 
+// Main function to render the 3D cartoon tree
+void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glScalef(scale, scale, scale);
+
+    // --- TRUNK ---
+    setToonMaterial(0.65f, 0.32f, 0.15f, 32.0f);
+
+    // Main trunk (twisted)
+    glPushMatrix();
+    drawTwistedCylinder(4.0f, 2.0f, 15.0f, 20);
+    glPopMatrix();
+
+    // --- MAIN BRANCHES ---
+    setToonMaterial(0.35f, 0.18f, 0.08f, 16.0f); // Slightly darker brown for branches
+
+
+    // --- FOLIAGE CANOPY ---
+    // Create multiple overlapping spheres for fluffy appearance
+
+    // Back layer spheres - Dark green
+    setToonMaterial(0.1f, 0.4f, 0.1f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-3.5f, 14.0f, -2.0f);
+    drawColoredSphere(3.2f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(3.0f, 14.5f, -1.5f);
+    drawColoredSphere(3.0f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 15.0f, -3.0f);
+    drawColoredSphere(2.8f, 12, 10);
+    glPopMatrix();
+
+    // Middle layer spheres - Medium green
+    setToonMaterial(0.2f, 0.6f, 0.2f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-2.5f, 15.0f, -0.5f);
+    drawColoredSphere(3.5f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.8f, 15.5f, 0.2f);
+    drawColoredSphere(3.3f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.5f, 16.0f, -1.0f);
+    drawColoredSphere(3.0f, 14, 12);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-1.0f, 14.5f, 1.5f);
+    drawColoredSphere(2.7f, 14, 12);
+    glPopMatrix();
+
+    // Front layer spheres - Bright green
+    setToonMaterial(0.3f, 0.8f, 0.3f, 64.0f);
+
+    glPushMatrix();
+    glTranslatef(-1.5f, 15.5f, 1.0f);
+    drawColoredSphere(3.8f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.0f, 16.0f, 1.5f);
+    drawColoredSphere(3.6f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 17.0f, 0.5f);
+    drawColoredSphere(3.2f, 16, 14);
+    glPopMatrix();
+
+    // Top highlight spheres - Very bright green
+    setToonMaterial(0.5f, 1.0f, 0.5f, 128.0f);
+
+    glPushMatrix();
+    glTranslatef(-0.5f, 16.5f, 2.0f);
+    drawColoredSphere(2.5f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(1.5f, 17.0f, 2.2f);
+    drawColoredSphere(2.3f, 16, 14);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0.8f, 18.0f, 1.0f);
+    drawColoredSphere(2.0f, 16, 14);
+    glPopMatrix();
+
+    // Small detail spheres for extra fluffiness
+    setToonMaterial(0.4f, 0.9f, 0.4f, 128.0f);
+
+    glPushMatrix();
+    glTranslatef(-2.0f, 17.0f, 2.5f);
+    drawColoredSphere(1.8f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(2.5f, 17.5f, 2.8f);
+    drawColoredSphere(1.5f, 12, 10);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(0, 18.5f, 2.0f);
+    drawColoredSphere(1.2f, 12, 10);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
+
+
+void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // Apply rotations in order: X, Y, Z
+    if (rotX != 0.0f) glRotatef(rotX, 1, 0, 0);
+    if (rotY != 0.0f) glRotatef(rotY, 0, 1, 0);
+    if (rotZ != 0.0f) glRotatef(rotZ, 0, 0, 1);
+
+    glScalef(scale, scale, scale);
+
+    // === BASE PLATFORM ===
+    setToonMaterial(0.3f, 0.3f, 0.3f, 16.0f); // Dark gray
+    glPushMatrix();
+    glTranslatef(0, 0.2f, 0);
+    drawTaperedCylinder(1.2f, 1.0f, 0.4f, 20);
+    glPopMatrix();
+
+    // === MAIN POLE ===
+    setToonMaterial(0.15f, 0.15f, 0.15f, 32.0f); // Dark metal
+    glPushMatrix();
+    glTranslatef(0, 0.6f, 0);
+    drawTaperedCylinder(0.15f, 0.12f, 8.0f, 16);
+    glPopMatrix();
+
+    // === DECORATIVE RINGS ON POLE ===
+    setToonMaterial(0.4f, 0.4f, 0.4f, 64.0f); // Lighter metal
+
+    // Bottom ring
+    glPushMatrix();
+    glTranslatef(0, 1.5f, 0);
+    drawTaperedCylinder(0.18f, 0.16f, 0.2f, 16);
+    glPopMatrix();
+
+    // Middle ring
+    glPushMatrix();
+    glTranslatef(0, 4.5f, 0);
+    drawTaperedCylinder(0.17f, 0.15f, 0.15f, 16);
+    glPopMatrix();
+
+    // Top ring
+    glPushMatrix();
+    glTranslatef(0, 7.5f, 0);
+    drawTaperedCylinder(0.16f, 0.14f, 0.15f, 16);
+    glPopMatrix();
+
+    // === LAMP ARM (HORIZONTAL EXTENSION) ===
+    setToonMaterial(0.2f, 0.2f, 0.2f, 32.0f); // Dark metal
+    glPushMatrix();
+    glTranslatef(0.8f, 8.2f, 0);
+    glRotatef(90, 0, 0, 1);
+    drawTaperedCylinder(0.08f, 0.06f, 1.6f, 12);
+    glPopMatrix();
+
+    // === LAMP SHADE (TOP PART) ===
+    setToonMaterial(0.1f, 0.1f, 0.1f, 16.0f); // Very dark
+    glPushMatrix();
+    glTranslatef(0.0f, 8.89f, 0);
+    drawTaperedCylinder(0.6f, 0.4f, 0.8f, 20);
+    glPopMatrix();
+
+    // === LAMP GLASS/BULB AREA ===
+    if (lampLightOn) {
+        // Bright bulb when on
+        setToonMaterial(1.0f, 1.0f, 0.8f, 128.0f); // Warm white/yellow
+
+        // Set up lamp light source (accounting for rotation)
+        glPushMatrix();
+        glLoadIdentity();
+        glTranslatef(x, y, z);
+        if (rotX != 0.0f) glRotatef(rotX, 1, 0, 0);
+        if (rotY != 0.0f) glRotatef(rotY, 0, 1, 0);
+        if (rotZ != 0.0f) glRotatef(rotZ, 0, 0, 1);
+        glScalef(scale, scale, scale);
+
+        GLfloat lampPos[] = {1.6f, 8.5f, 0.0f, 1.0f};
+        GLfloat transformedPos[4];
+
+        // Get current modelview matrix to transform light position
+        GLfloat modelview[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+
+        // Transform the light position
+        transformedPos[0] = modelview[0] * lampPos[0] + modelview[4] * lampPos[1] + modelview[8] * lampPos[2] + modelview[12];
+        transformedPos[1] = modelview[1] * lampPos[0] + modelview[5] * lampPos[1] + modelview[9] * lampPos[2] + modelview[13];
+        transformedPos[2] = modelview[2] * lampPos[0] + modelview[6] * lampPos[1] + modelview[10] * lampPos[2] + modelview[14];
+        transformedPos[3] = 1.0f;
+
+        glPopMatrix();
+
+        GLfloat lampAmbient[] = {0.2f, 0.2f, 0.1f, 1.0f}; // Warm ambient
+        GLfloat lampDiffuse[] = {0.8f, 0.8f, 0.6f, 1.0f}; // Warm diffuse
+        GLfloat lampSpecular[] = {1.0f, 1.0f, 0.9f, 1.0f}; // Bright specular
+
+        glEnable(lampLightID);
+        glLightfv(lampLightID, GL_POSITION, transformedPos);
+        glLightfv(lampLightID, GL_AMBIENT, lampAmbient);
+        glLightfv(lampLightID, GL_DIFFUSE, lampDiffuse);
+        glLightfv(lampLightID, GL_SPECULAR, lampSpecular);
+
+        // Set attenuation for realistic falloff
+        glLightf(lampLightID, GL_CONSTANT_ATTENUATION, 1.0f);
+        glLightf(lampLightID, GL_LINEAR_ATTENUATION, 0.05f);
+        glLightf(lampLightID, GL_QUADRATIC_ATTENUATION, 0.01f);
+
+    } else {
+        // Dim bulb when off
+        setToonMaterial(0.3f, 0.3f, 0.3f, 32.0f); // Gray
+        glDisable(lampLightID);
+    }
+
+    // Draw the bulb/glass
+    glPushMatrix();
+    glTranslatef(0.0f, 8.8f, 0);
+    drawColoredSphere(0.35f, 16, 12);
+    glPopMatrix();
+
+    // === LAMP SHADE BOTTOM RIM ===
+    setToonMaterial(0.15f, 0.15f, 0.15f, 32.0f);
+    glPushMatrix();
+    glTranslatef(0.0f, 8.3f, 0);
+    drawTaperedCylinder(0.65f, 0.62f, 0.1f, 20);
+    glPopMatrix();
+
+    // === DECORATIVE ELEMENTS ===
+    // Small ornamental sphere at top of main pole
+    setToonMaterial(0.4f, 0.4f, 0.4f, 64.0f);
+    glPushMatrix();
+    glTranslatef(0, 8.8f, 0);
+    drawColoredSphere(0.1f, 12, 8);
+    glPopMatrix();
+
+    // Base decorative elements
+    setToonMaterial(0.35f, 0.35f, 0.35f, 48.0f);
+    for (int i = 0; i < 4; i++) {
+        glPushMatrix();
+        glRotatef(i * 90, 0, 1, 0);
+        glTranslatef(0.8f, 0.1f, 0);
+        drawColoredSphere(0.08f, 8, 6);
+        glPopMatrix();
+    }
+
+    glPopMatrix();
+}
+
 
 void drawDecorations() {
     // Ornamen kecil di pilar tengah
@@ -586,6 +753,12 @@ void display() {
     //pohon gede kanan
     renderCartoonTree3D(22, 0, -10, 1.0f);
 
+    //param (x,y,z,scale,RotX,RotY,RotZ)
+    drawLamppost(-25.0f, 0.0f, 6.5f, 0.8f, 0.0f, 45.0f, 0.0f);     // Left far (angled)
+    drawLamppost(25.0f, 0.0f, 6.5f, 0.8f, 0.0f, -45.0f, 0.0f);     // Right far (angled)
+    drawLamppost(12.5f, 0.0f, 6.5f, 1.0f, 0.0f, 180.0f, 0.0f);
+    drawLamppost(-12.5f, 0.0f, 6.5f, 1.0f, 0.0f, 180.0f, 0.0f);
+
 
     drawDecorations();
     glutSwapBuffers();
@@ -601,6 +774,11 @@ void keyboard(unsigned char key, int, int) {
         case 'q': cameraHeight += 1; break;
         case 'e': cameraHeight -= 1; break;
         case 'r': cameraAngle = 0; cameraDistance = 25; cameraHeight = 5; break;
+        case 'g': // Toggle lamp lighting
+        case 'G':
+            lampLightOn = !lampLightOn;
+            std::cout << "Lamp light " << (lampLightOn ? "ON" : "OFF") << std::endl;
+            break;
         case 27: exit(0); // ESC
     }
     glutPostRedisplay();
@@ -673,7 +851,14 @@ void setup() {
     if (logoTexture == 0) {
         std::cerr << "Failed to load logo texture!" << std::endl;
     } else {
-        std::cout << "Logo texture loaded successfully with ID: " << logoTexture << std::endl;
+        std::cout << "\n\nLogo texture loaded successfully with ID: " << logoTexture << std::endl;
+    }
+    pillarTexture = loadTexture("texture/pillar_texture.jpg");
+    if(pillarTexture == 0){
+        printf("Failed to load pillar texure");
+    }
+    else{
+        printf("\n\nLogo Texture loaded successfully with ID: %d",pillarTexture);
     }
 
     GLfloat lightPos[] = { 5, 15, 10, 1 };
