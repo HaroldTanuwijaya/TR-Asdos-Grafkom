@@ -1,0 +1,88 @@
+# depslib dependency file v1.0
+1751916619 source:c:\users\asus\documents\c programs\tr_asdos_grafkom\main.cpp
+	<GL/glut.h>
+	<cmath>
+	<vector>
+	<fstream>
+	<windows.h>
+	<iostream>
+	"texture_loader.h"
+	"stb_image.h"
+
+1632035598 c:\mingw\lib\freeglut\include\gl\glut.h
+	"freeglut_std.h"
+
+1632035596 c:\mingw\lib\freeglut\include\gl\freeglut_std.h
+	<windows.h>
+	<EGL/egl.h>
+	<GLES/gl.h>
+	<GLES2/gl2.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<stdlib.h>
+
+1751911538 c:\users\asus\documents\c programs\tr_asdos_grafkom\stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
+
+1751913797 c:\users\asus\documents\c programs\tr_asdos_grafkom\texture_loader.h
+	<GL/glut.h>
+	"stb_image.h"
+	<iostream>
+	<fstream>
+	<windows.h>
+
+1751912043 source:c:\users\asus\documents\c programs\tr_asdos_grafkom\texture_loader.cpp
+	"stb_image.h"
+	<GL/glut.h>
+	<iostream>
+
+1751925719 source:c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\main.cpp
+	<GL/glut.h>
+	<cmath>
+	<vector>
+	<fstream>
+	<windows.h>
+	<iostream>
+	"texture_loader.h"
+	"stb_image.h"
+
+1751918271 c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\texture_loader.h
+	<GL/glut.h>
+	"stb_image.h"
+	<iostream>
+	<fstream>
+	<windows.h>
+
+1751918271 c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
+
