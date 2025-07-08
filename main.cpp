@@ -1,4 +1,3 @@
-kukasih sini aja codenya
 
 #include <GL/glut.h>
 #include <cmath>
