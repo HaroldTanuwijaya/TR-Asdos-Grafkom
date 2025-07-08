@@ -1,4 +1,8 @@
 
 .vscode/
 catatan.cpp
-
+TR_ASDOS_GRAFKOM.cbp
+TR_ASDOS_GRAFKOM.depend
+TR_ASDOS_GRAFKOM.layout
+obj/
+bin/
