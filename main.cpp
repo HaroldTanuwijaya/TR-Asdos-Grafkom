@@ -433,12 +433,11 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 // ========== KOMPONEN UTAMA ==========
 
 void drawGround() {
-    glColor3f(0.5f, 0.5f, 0.5f); // Jalan
-    drawBox(0, -0.5f, 0, 60, 1, 40);
+    setToonMaterial(0.0f, 0.0f, 0.0f, 32.0f); // Jalan
+    drawBox(0, -0.6f, 0, 100, 1, 40);
 
-    glColor3f(0.8f, 0.8f, 0.8f); // Trotoar
-    drawBox(0, -0.4f, -10, 50, 0.2f, 8);
-    drawBox(0, -0.4f, 10, 50, 0.2f, 8);
+    setToonMaterial(0.1f, 0.1f, 0.1f, 50.0f); // Trotoar
+    drawBox(0, 0.0f, -5, 100, 0.2f, 30);
 }
 
 void drawMainPillar(float x, float angle) {
