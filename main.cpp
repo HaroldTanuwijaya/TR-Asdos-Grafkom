@@ -1,3 +1,5 @@
+kukasih sini aja codenya
+
 #include <GL/glut.h>
 #include <cmath>
 #include <vector>
@@ -39,7 +41,7 @@ void debugFolder() {
     GetCurrentDirectoryA(MAX_PATH, cwd);
     std::cout << "Current working directory: " << cwd << std::endl;
     WIN32_FIND_DATA findFileData;
-    HANDLE hFind = FindFirstFile("texture\\*.*", &findFileData);
+    HANDLE hFind = FindFirstFile("texture\\.", &findFileData);
     if (hFind == INVALID_HANDLE_VALUE) {
         std::cout << "Folder 'texture' was not found." << std::endl;
     } else {
@@ -440,16 +442,27 @@ void drawGround() {
     drawBox(0, -0.4f, 10, 50, 0.2f, 8);
 }
 
-void drawMainPillar(float x) {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Base
+void drawMainPillar(float x, float angle) {
+    glPushMatrix();
+
+    // Pindahkan poros rotasi ke posisi pilar (misalnya bagian bawah pilar)
+    glTranslatef(x, 1.0f, -4.0f);
+    glRotatef(angle, 0.0f, 1.0f, 0.0f);  // Rotasi terhadap sumbu Y
+    glTranslatef(-x, -1.0f, 4.0f);       // Kembalikan posisi ke asal
+
+    // Bagian bawah (Base)
+    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
     drawBox(x, 1.0f, -4.0f, 2.5f, 2.0f, 6.0f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Pilar utama
+    // Pilar utama
     drawBox(x, 6.0f, -4.0f, 2.2f, 10.0f, 5.0f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f); // Top
-    drawBox(x, 11.5f, -4.0f, 2.6f, 1.0f, 5.2f);
+    // Bagian atas (Top)
+    drawBox(x - 1.5f, 11.5f, -4.0f, 5.1f, 1.0f, 5.0f);
+
+    glPopMatrix();
 }
+
 
 void drawCenterPillar() {
     setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
@@ -485,7 +498,7 @@ void drawSideWall(float x, float y, float z) {
 void drawSideWallAbove(float x, float y, float z) {
     setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
 
-    drawBox(x, y, z, 5.6f, 7.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
+    drawBox(x, y, z, 4.0f, 7.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
 
@@ -546,34 +559,34 @@ void display() {
 
     drawGround();
 
-    drawMainPillar(-9.0f);
-    drawMainPillar(9.0f);
+    drawMainPillar(-13.0f,180.0f);
+    drawMainPillar(13.0f,0.0f);
     drawCenterPillar();
-    drawConnectingBeamAt(0.0f, 12.0f, -2.5f); // same default position
-    drawConnectingBeamAt(.0f, 12.0f, -3.5f); // same default position
-    drawConnectingBeamAt(.0f, 12.0f, -4.5f); // same default position
-    drawConnectingBeamAt(.0f, 12.0f, -5.5f); // same default position
+    drawConnectingBeamAt(0.0f, 11.5f, -2.5f); // same default position
+    drawConnectingBeamAt(.0f, 11.5f, -3.5f); // same default position
+    drawConnectingBeamAt(.0f, 11.5f, -4.5f); // same default position
+    drawConnectingBeamAt(.0f, 11.5f, -5.5f); // same default position
 
 
-    drawSideWall(16.0f, 4.0f, -4.0f);
-    drawSideWallAbove(12.5f, 8.5f, -4.0f);
-    drawSideWall(-16.0f, 4.0f, -4.0f);
-    drawSideWallAbove(-12.5f, 8.5f, -4.0f);
+    drawSideWall(20.0f, 4.0f, -4.0f);
+    drawSideWallAbove(15.7f, 8.5f, -4.0f);
+    drawSideWall(-20.0f, 4.0f, -4.0f);
+    drawSideWallAbove(-15.7f, 8.5f, -4.0f);
 
 
 
     // Pilar putih kiri-kanan (3 tiap sisi)
-    drawSmallPillar(-16.5f, -1.5f);
-    drawSmallPillar(-15.0f, -1.0f);
-    drawSmallPillar(-13.5f, -1.0f);
-    drawSmallPillar(13.5f, -1.0);
-    drawSmallPillar(15.0f, -1.0f);
-    drawSmallPillar(16.5f, -1.0f);
+    drawSmallPillar(-22.5f, -1.0f);
+    drawSmallPillar(-20.0f, -1.0f);
+    drawSmallPillar(-17.5f, -1.0f);
+    drawSmallPillar(17.5f, -1.0);
+    drawSmallPillar(20.0f, -1.0f);
+    drawSmallPillar(22.5f, -1.0f);
 
     //pohon gede kiri
-    renderCartoonTree3D(-18, 0, 3, 1.0f);
+    renderCartoonTree3D(-22, 0, -10, 1.0f);
     //pohon gede kanan
-    renderCartoonTree3D(18, 0, 3, 1.0f);
+    renderCartoonTree3D(22, 0, -10, 1.0f);
 
 
     drawDecorations();
