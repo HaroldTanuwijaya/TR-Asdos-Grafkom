@@ -997,7 +997,13 @@ void display() {
 
     // Pagar di sisi kiri
     for(float x = -50.0f; x <= -18.0f; x += 5.0f) {
+        glPushMatrix();
+        glTranslatef(x, 0.1f, item_z_pos);
+        glRotatef(180.0f, 1, 0, 0); // rotasi 180 derajat di sumbu Y
+        glRotatef(180.0f, 0, 0, 1); // rotasi 180 derajat di sumbu Z
+        glTranslatef(-x, -0.1f, -item_z_pos);
         drawFenceSection(x, item_z_pos);
+        glPopMatrix();
     }
     // Pagar di sisi kanan (diperpanjang)
     // Loop berjalan dari 18.0f hingga 48.0f
