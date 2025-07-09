@@ -419,11 +419,22 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 // ========== KOMPONEN UTAMA ==========
 
 void drawGround() {
-    setRealisticMaterial(0.0f, 128.0f, 0.0f, 0.0f); // Jalan
-    drawBox(0, -0.6f, 0, 100, 1, 40);
+    // Lapisan 1: Rumput sebagai dasar (paling bawah)
+    // Ini akan menutupi area di bawah dan di sekitar gerbang.
+    setRealisticMaterial(0.2f, 0.5f, 0.2f, 0.0f, 0.1f);
+    drawBox(0.0f, -0.15f, 0.0f, 100.0f, 0.1f, 100.0f);
 
-    setRealisticMaterial(0.1f, 0.1f, 0.1f, 50.0f,0.3f); // Trotoar
-    drawBox(0, 0.0f, -5, 100, 0.2f, 30);
+    // Lapisan 2: Trotoar di depan gerbang (di atas rumput)
+    // Posisinya sedikit lebih tinggi dari rumput.
+    // Warnanya dibuat seperti paving blok/beton terang.
+    setRealisticMaterial(0.7f, 0.7f, 0.65f, 0.0f, 0.3f);
+    drawBox(0.0f, -0.05f, 4.0f, 60.0f, 0.1f, 12.0f);
+
+    // Lapisan 3: Jalan raya (paling depan)
+    // Posisinya sedikit lebih rendah dari trotoar, seperti di dunia nyata.
+    // Warnanya abu-abu gelap untuk aspal.
+    setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
+    drawBox(0.0f, -0.1f, 16.0f, 100.0f, 0.1f, 20.0f);
 }
 
 void drawMainPillar(float x, float angle) {
@@ -449,16 +460,16 @@ void drawMainPillar(float x, float angle) {
 
 
 void drawCenterPillar() {
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
     drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f);
 
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
     drawBox(0, 10.0f, -2.3f, 2.0f, 2.0f, 0.3f);
 
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
     //tempat logo
-    setRealisticMaterial(0.9f, 0.88f, 0.85f, 32.0f,0.3f);
+    setRealisticMaterial(0.9f, 0.88f, 0.85f, 0.0f,0.3f);
     drawBox(0, 14.3f, -1.1f, 3.5f, 3.0f, 0.4f);
 
     // Parameters: x, y, z, size, rotX, rotY, rotZ, useCircle
@@ -497,7 +508,7 @@ void drawSmallPillar(float x, float z) {
 }
 
 void drawConnectingBeamAt(float x, float y, float z) {
-    setRealisticMaterial(0.85f, 0.85f, 0.85f, 32.0f,0.3f);
+    setRealisticMaterial(0.85f, 0.85f, 0.85f, 0.0f,0.3f);
 
     // Main beam (long horizontal)
     drawBox(x, y, z, 22.0f, 0.6f, 0.5f);
@@ -516,7 +527,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glScalef(scale, scale, scale);
 
     // --- TRUNK ---
-    setRealisticMaterial(0.65f, 0.32f, 0.15f, 32.0f,0.3f);
+    setRealisticMaterial(0.65f, 0.32f, 0.15f, 0.5f,0.3f);
 
     // Main trunk (twisted)
     glPushMatrix();
@@ -710,7 +721,7 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
 
         glPopMatrix();
     } else {
-        setRealisticMaterial(0.3f, 0.3f, 0.3f, 32.0f, 0.1f);
+        setRealisticMaterial(0.3f, 0.3f, 0.3f, 0.0f, 0.1f);
         glDisable(lampLightID);
     }
 
