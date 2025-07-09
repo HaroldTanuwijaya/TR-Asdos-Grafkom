@@ -27,8 +27,8 @@ GLuint pillarTexture;
 GLuint logoTexture;
 
 //light variable
-bool lampLightOn = true;  
-GLuint lampLightID = GL_LIGHT1;  
+bool lampLightOn = true;
+GLuint lampLightID = GL_LIGHT1;
 
 // Day/Night cycle variables
 bool isNightTime = false;
@@ -37,10 +37,10 @@ float transitionSpeed = 0.05f;
 bool isTransitioning = false;
 
 // Enhanced lighting variables
-GLfloat dayAmbient[] = {0.4f, 0.4f, 0.4f, 1.0f};
-GLfloat nightAmbient[] = {0.1f, 0.1f, 0.2f, 1.0f};
-GLfloat dayDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-GLfloat nightDiffuse[] = {0.3f, 0.3f, 0.5f, 1.0f};
+GLfloat dayAmbient[] = {0.3f, 0.3f, 0.3f, 1.0f};
+GLfloat nightAmbient[] = {0.08f, 0.08f, 0.1f, 1.0f};
+GLfloat dayDiffuse[] = {0.7f, 0.7f, 0.6f, 1.0f};
+GLfloat nightDiffuse[] = {0.2f, 0.2f, 0.4f, 1.0f};
 GLfloat daySkyColor[] = {0.6f, 0.8f, 1.0f};
 GLfloat nightSkyColor[] = {0.05f, 0.05f, 0.2f};
 
@@ -73,6 +73,26 @@ void debugFolder() {
         FindClose(hFind);
     }
 }
+
+void setMaterial(float r, float g, float b, float shininess = 10.0f, float specStrength = 0.3f) {
+    float nightDimming = 0.8f + 0.2f * (1.0f - dayNightTransition);
+
+    GLfloat ambient[] = {r * 0.3f * nightDimming, g * 0.3f * nightDimming, b * 0.3f * nightDimming, 1.0f};
+    GLfloat diffuse[] = {r * nightDimming, g * nightDimming, b * nightDimming, 1.0f};
+    GLfloat specular[] = {
+        specStrength * (0.9f + 0.1f * dayNightTransition),
+        specStrength * (0.9f + 0.1f * dayNightTransition),
+        specStrength * (0.95f + 0.05f * dayNightTransition),
+        1.0f
+    };
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+}
+
+
 
 //supporter function
 void drawTaperedCylinder(float bottomRadius, float topRadius, float height, int segments = 16) {
@@ -199,22 +219,10 @@ void drawBranch(float length, float baseRadius, float topRadius, float bendAngle
     glPopMatrix();
 }
 
-// Function to set toon-shaded material properties
-void setToonMaterial(float r, float g, float b, float shininess = 0.0f) {
-    float ambient[] = {r * 0.3f, g * 0.3f, b * 0.3f, 1.0f};
-    float diffuse[] = {r, g, b, 1.0f};
-    float specular[] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-}
-
 void updateLighting() {
     // Interpolate between day and night lighting
     GLfloat currentAmbient[4], currentDiffuse[4], currentSky[3];
-    
+
     for (int i = 0; i < 3; i++) {
         currentAmbient[i] = dayAmbient[i] * (1.0f - dayNightTransition) + nightAmbient[i] * dayNightTransition;
         currentDiffuse[i] = dayDiffuse[i] * (1.0f - dayNightTransition) + nightDiffuse[i] * dayNightTransition;
@@ -222,22 +230,22 @@ void updateLighting() {
     }
     currentAmbient[3] = 1.0f;
     currentDiffuse[3] = 1.0f;
-    
+
     // Update sky color
     glClearColor(currentSky[0], currentSky[1], currentSky[2], 1.0f);
-    
+
     // Update main light (sun/moon)
-    GLfloat lightPos[] = { 
-        5.0f + 10.0f * dayNightTransition, 
-        15.0f - 5.0f * dayNightTransition, 
-        10.0f, 
-        1.0f 
+    GLfloat lightPos[] = {
+        5.0f + 10.0f * dayNightTransition,
+        15.0f - 5.0f * dayNightTransition,
+        10.0f,
+        1.0f
     };
-    
+
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     glLightfv(GL_LIGHT0, GL_AMBIENT, currentAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, currentDiffuse);
-    
+
     // Add slight blue tint for night specular
     GLfloat specular[] = {
         0.5f + 0.2f * dayNightTransition,
@@ -252,17 +260,17 @@ void updateLighting() {
 void setRealisticMaterial(float r, float g, float b, float shininess = 1.0f, float specStrength = 0.3f) {
     // Adjust material properties based on day/night
     float nightDimming = 0.7f + 0.3f * (1.0f - dayNightTransition);
-    
+
     GLfloat ambient[] = {
-        r * 0.2f * nightDimming, 
-        g * 0.2f * nightDimming, 
-        b * 0.2f * nightDimming, 
+        r * 0.2f * nightDimming,
+        g * 0.2f * nightDimming,
+        b * 0.2f * nightDimming,
         1.0f
     };
     GLfloat diffuse[] = {
-        r * nightDimming, 
-        g * nightDimming, 
-        b * nightDimming, 
+        r * nightDimming,
+        g * nightDimming,
+        b * nightDimming,
         1.0f
     };
     GLfloat specular[] = {
@@ -454,6 +462,13 @@ void drawCenterPillar() {
     setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
 
+    drawBox(0, 16.0f, -5.8f, 3.5f, 3.0f, 0.4f);
+        // Logo circle (simplified representation)
+    glPushMatrix();
+    glTranslatef(0, 16.0f, -5.5f);
+    setMaterial(0.8f, 0.2f, 0.2f, 60.0f, 0.8f); // Red circle
+    glutSolidSphere(1.0f, 20, 20);
+    glPopMatrix();
 
     // Parameters: x, y, z, size, rotX, rotY, rotZ, useCircle
      drawLogo(0.0f, 14.5f, -1.1f, 3.0f, 180, 0, 0, true);  // Front face
@@ -671,7 +686,7 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
 
     // Enhanced lamp lighting logic
     bool shouldLampBeOn = lampLightOn && (isNightTime || dayNightTransition > 0.3f);
-    
+
     if (shouldLampBeOn) {
         // Brighter at night, dimmer during day
         float lampIntensity = 0.3f + 0.7f * dayNightTransition;
@@ -747,6 +762,36 @@ void timer(int value) {
     }
     glutTimerFunc(50, timer, 0); // 20 FPS for smooth transition
 }
+void drawSunAndMoon() {
+    glPushMatrix();
+
+    // Posisi interpolasi dari day-night transition
+    float sunY = 15.0f - 10.0f * dayNightTransition;  // Turun saat malam
+    float sunX = -15.0f + 30.0f * dayNightTransition; // Geser ke kanan saat malam
+    float sunZ = 20.0f;
+
+    glTranslatef(sunX, sunY, sunZ);
+
+    // Glow Material
+    GLfloat glowAmbient[] = {1.0f, 1.0f, 0.6f, 1.0f};
+    GLfloat glowDiffuse[] = {1.0f, 1.0f, 0.6f, 1.0f};
+    if (dayNightTransition > 0.5f) {
+        // Moon Mode
+        glowAmbient[0] = 0.6f; glowAmbient[1] = 0.6f; glowAmbient[2] = 0.9f;
+        glowDiffuse[0] = 0.6f; glowDiffuse[1] = 0.6f; glowDiffuse[2] = 0.9f;
+    }
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, glowAmbient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, glowDiffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, glowAmbient);
+    glMaterialf(GL_FRONT, GL_SHININESS, 100.0f);
+
+    // Gambar sphere untuk sun/moon
+    glutSolidSphere(1.5f, 20, 16);
+
+    glPopMatrix();
+}
+
 
 void updateDayNightTransition() {
     if (isTransitioning) {
