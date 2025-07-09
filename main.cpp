@@ -419,20 +419,16 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 // ========== KOMPONEN UTAMA ==========
 
 void drawGround() {
-    // Lapisan 1: Rumput sebagai dasar (paling bawah)
-    // Ini akan menutupi area di bawah dan di sekitar gerbang.
+    // Lapisan 1: Rumput sebagai dasar
     setRealisticMaterial(0.2f, 0.5f, 0.2f, 0.0f, 0.1f);
     drawBox(0.0f, -0.15f, 0.0f, 100.0f, 0.1f, 100.0f);
 
-    // Lapisan 2: Trotoar di depan gerbang (di atas rumput)
-    // Posisinya sedikit lebih tinggi dari rumput.
-    // Warnanya dibuat seperti paving blok/beton terang.
-    setRealisticMaterial(0.7f, 0.7f, 0.65f, 0.0f, 0.3f);
-    drawBox(0.0f, -0.05f, 4.0f, 60.0f, 0.1f, 12.0f);
+    // Lapisan 2: Trotoar di depan gerbang
+    setRealisticMaterial(0.7f, 0.7f, 0.65f, 0.0f, 0.1f);
+    drawBox(0.0f, 0.0f, 4.0f, 100.0f, 0.2f, 12.0f);
 
-    // Lapisan 3: Jalan raya (paling depan)
-    // Posisinya sedikit lebih rendah dari trotoar, seperti di dunia nyata.
-    // Warnanya abu-abu gelap untuk aspal.
+    // Lapisan 3: Jalan raya
+
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, 16.0f, 100.0f, 0.1f, 20.0f);
 }
