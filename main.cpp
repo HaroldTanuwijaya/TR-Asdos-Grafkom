@@ -777,6 +777,60 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
 
     glPopMatrix();
 }
+void drawTamanOval(float centerX, float centerZ, float radiusX, float radiusZ) {
+    const int segments = 100;
+
+    // Rumput oval
+    glColor3f(0.3f, 0.7f, 0.3f); // hijau rumput
+    glBegin(GL_POLYGON);
+    for (int i = 0; i < segments; ++i) {
+        float theta = 2.0f * 3.1415926f * float(i) / float(segments);
+        float x = radiusX * cosf(theta);
+        float z = radiusZ * sinf(theta);
+        glVertex3f(centerX + x, 0.01f, centerZ + z);
+    }
+    glEnd();
+
+    // Batu pembatas oval (hitam-putih)
+    for (int i = 0; i < segments; ++i) {
+        float theta1 = 2.0f * 3.1415926f * float(i) / float(segments);
+        float theta2 = 2.0f * 3.1415926f * float(i + 1) / float(segments);
+        float x1 = radiusX * cosf(theta1);
+        float z1 = radiusZ * sinf(theta1);
+        float x2 = radiusX * cosf(theta2);
+        float z2 = radiusZ * sinf(theta2);
+
+        if (i % 2 == 0)
+            glColor3f(1.0f, 1.0f, 1.0f); // putih
+        else
+            glColor3f(0.0f, 0.0f, 0.0f); // hitam
+
+        glBegin(GL_QUADS);
+        glVertex3f(centerX + x1, 0.01f, centerZ + z1);
+        glVertex3f(centerX + x2, 0.01f, centerZ + z2);
+        glVertex3f(centerX + x2, 0.3f, centerZ + z2);
+        glVertex3f(centerX + x1, 0.3f, centerZ + z1);
+        glEnd();
+    }
+}
+void drawTiangBendera(float x, float z) {
+    glPushMatrix();
+    glTranslatef(x, 0.0f, z);
+
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);  // 🔁 Rotasi agar silinder tegak (Z -> Y)
+
+    // Tiang
+    glColor3f(0.8f, 0.8f, 0.8f);
+    GLUquadric *quad = gluNewQuadric();
+    gluCylinder(quad, 0.05, 0.05, 6.0, 8, 8); // tinggi 6 satuan
+
+    // Bola di atas tiang
+    glTranslatef(0.0f, 0.0f, 6.0f); // pindah ke atas ujung silinder
+    glColor3f(1.0f, 1.0f, 0.0f); // kuning
+    glutSolidSphere(0.1, 12, 12);
+
+    glPopMatrix();
+}
 
 // Fungsi untuk menggambar satu pot bunga beserta tanamannya
 void drawPlantPot(float x, float z) {
@@ -976,7 +1030,18 @@ void display() {
     drawSideWall(-20.0f, 4.0f, -4.0f);
     drawSideWallAbove(-15.7f, 8.5f, -4.0f);
 
+    //taman belakang
+    drawTamanOval(0.0f, -25.0f, 7.0f, 15.0f);
+     drawTiangBendera(-0.8f, -12.0f); // Kiri
+    drawTiangBendera( 0.0f, -12.0f); // Tengah
+    drawTiangBendera( 0.8f, -12.0f); // Kanan
+     drawPlantPot(3.0f,item_z_pos -15.5f);
+     drawPlantPot(4.0f,item_z_pos -16.5f);
+     drawPlantPot(4.5f,item_z_pos -17.5f);
 
+     drawPlantPot(-3.0f,item_z_pos -15.5f);
+     drawPlantPot(-4.0f,item_z_pos -16.5f);
+     drawPlantPot(-4.5f,item_z_pos -17.5f);
 
     // Pilar putih kiri-kanan (3 tiap sisi)
     drawSmallPillar(-22.5f, -1.0f);
