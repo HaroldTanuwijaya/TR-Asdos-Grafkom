@@ -582,9 +582,9 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     // --- TRUNK ---
     setRealisticMaterial(0.65f, 0.32f, 0.15f, 0.5f,0.3f);
 
-    // Main trunk (twisted)
+    // Main trunk (twisted) - batang diperkecil
     glPushMatrix();
-    drawTwistedCylinder(4.0f, 2.0f, 15.0f, 20);
+    drawTwistedCylinder(1.5f, 1.2f, 15.0f, 20); // batang lebih kecil
     glPopMatrix();
 
     // --- MAIN BRANCHES ---
@@ -1061,6 +1061,12 @@ void display() {
     renderCartoonTree3D(-22, 0, -10, 1.0f);
     //pohon gede kanan
     renderCartoonTree3D(22, 0, -10, 1.0f);
+
+    //pohon taman belakang
+    renderCartoonTree3D(0, 0, -20, 1.0f);
+    renderCartoonTree3D(3, 0, -25, 1.0f);
+    renderCartoonTree3D(-4, 0, -30, 1.0f);
+
 
     //param (x,y,z,scale,RotX,RotY,RotZ)
     drawLamppost(-25.0f, 0.0f, 12.2f, 1.0f, 0.0f, 45.0f, 0.0f);     // Left far (angled)
