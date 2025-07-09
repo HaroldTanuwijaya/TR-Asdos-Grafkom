@@ -27,8 +27,23 @@ GLuint pillarTexture;
 GLuint logoTexture;
 
 //light variable
-bool lampLightOn = true;  // Global variable to control lamp lighting
-GLuint lampLightID = GL_LIGHT1;  // Use LIGHT1 for the lamp (LIGHT0 is already used)
+bool lampLightOn = true;  
+GLuint lampLightID = GL_LIGHT1;  
+
+// Day/Night cycle variables
+bool isNightTime = false;
+float dayNightTransition = 0.0f; // 0.0 = full day, 1.0 = full night
+float transitionSpeed = 0.05f;
+bool isTransitioning = false;
+
+// Enhanced lighting variables
+GLfloat dayAmbient[] = {0.4f, 0.4f, 0.4f, 1.0f};
+GLfloat nightAmbient[] = {0.1f, 0.1f, 0.2f, 1.0f};
+GLfloat dayDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+GLfloat nightDiffuse[] = {0.3f, 0.3f, 0.5f, 1.0f};
+GLfloat daySkyColor[] = {0.6f, 0.8f, 1.0f};
+GLfloat nightSkyColor[] = {0.05f, 0.05f, 0.2f};
+
 
 
 //function buat gambar
@@ -196,6 +211,72 @@ void setToonMaterial(float r, float g, float b, float shininess = 0.0f) {
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
+void updateLighting() {
+    // Interpolate between day and night lighting
+    GLfloat currentAmbient[4], currentDiffuse[4], currentSky[3];
+    
+    for (int i = 0; i < 3; i++) {
+        currentAmbient[i] = dayAmbient[i] * (1.0f - dayNightTransition) + nightAmbient[i] * dayNightTransition;
+        currentDiffuse[i] = dayDiffuse[i] * (1.0f - dayNightTransition) + nightDiffuse[i] * dayNightTransition;
+        currentSky[i] = daySkyColor[i] * (1.0f - dayNightTransition) + nightSkyColor[i] * dayNightTransition;
+    }
+    currentAmbient[3] = 1.0f;
+    currentDiffuse[3] = 1.0f;
+    
+    // Update sky color
+    glClearColor(currentSky[0], currentSky[1], currentSky[2], 1.0f);
+    
+    // Update main light (sun/moon)
+    GLfloat lightPos[] = { 
+        5.0f + 10.0f * dayNightTransition, 
+        15.0f - 5.0f * dayNightTransition, 
+        10.0f, 
+        1.0f 
+    };
+    
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, currentAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, currentDiffuse);
+    
+    // Add slight blue tint for night specular
+    GLfloat specular[] = {
+        0.5f + 0.2f * dayNightTransition,
+        0.5f + 0.2f * dayNightTransition,
+        0.7f + 0.3f * dayNightTransition,
+        1.0f
+    };
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+}
+
+
+void setRealisticMaterial(float r, float g, float b, float shininess = 1.0f, float specStrength = 0.3f) {
+    // Adjust material properties based on day/night
+    float nightDimming = 0.7f + 0.3f * (1.0f - dayNightTransition);
+    
+    GLfloat ambient[] = {
+        r * 0.2f * nightDimming, 
+        g * 0.2f * nightDimming, 
+        b * 0.2f * nightDimming, 
+        1.0f
+    };
+    GLfloat diffuse[] = {
+        r * nightDimming, 
+        g * nightDimming, 
+        b * nightDimming, 
+        1.0f
+    };
+    GLfloat specular[] = {
+        specStrength * (0.8f + 0.2f * dayNightTransition),
+        specStrength * (0.8f + 0.2f * dayNightTransition),
+        specStrength * (0.9f + 0.1f * dayNightTransition),
+        1.0f
+    };
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+}
 
 
 
@@ -334,10 +415,10 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 // ========== KOMPONEN UTAMA ==========
 
 void drawGround() {
-    setToonMaterial(0.0f, 0.0f, 0.0f, 32.0f); // Jalan
+    setRealisticMaterial(0.0f, 128.0f, 0.0f, 0.0f); // Jalan
     drawBox(0, -0.6f, 0, 100, 1, 40);
 
-    setToonMaterial(0.1f, 0.1f, 0.1f, 50.0f); // Trotoar
+    setRealisticMaterial(0.1f, 0.1f, 0.1f, 50.0f,0.3f); // Trotoar
     drawBox(0, 0.0f, -5, 100, 0.2f, 30);
 }
 
@@ -350,7 +431,7 @@ void drawMainPillar(float x, float angle) {
     glTranslatef(-x, -1.0f, 4.0f);       // Kembalikan posisi ke asal
 
     // Bagian bawah (Base)
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.1f);
     drawBox(x, 1.0f, -4.0f, 2.5f, 2.0f, 6.0f);
 
     // Pilar utama
@@ -364,13 +445,13 @@ void drawMainPillar(float x, float angle) {
 
 
 void drawCenterPillar() {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
     drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
     drawBox(0, 10.0f, -2.3f, 2.0f, 2.0f, 0.3f);
 
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
 
 
@@ -389,20 +470,20 @@ void drawCenterPillar() {
 }
 
 void drawSideWall(float x, float y, float z) {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
 
     drawBox(x, y, z, 5.6f, 16.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
 void drawSideWallAbove(float x, float y, float z) {
-    setToonMaterial(0.75f, 0.60f, 0.45f, 32.0f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
 
     drawBox(x, y, z, 4.0f, 7.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
 
 void drawSmallPillar(float x, float z) {
-    setToonMaterial(0.95f, 0.95f, 0.95f, 32.0f);
+    setRealisticMaterial(0.95f, 0.95f, 0.95f, 32.0f,0.3f);
     drawCylinder(x, 0.0f, z, 0.2f, 11.5f); // lebih tinggi
 
     glColor3f(0.90f, 0.90f, 0.90f);
@@ -410,7 +491,7 @@ void drawSmallPillar(float x, float z) {
 }
 
 void drawConnectingBeamAt(float x, float y, float z) {
-    setToonMaterial(0.85f, 0.85f, 0.85f, 32.0f);
+    setRealisticMaterial(0.85f, 0.85f, 0.85f, 32.0f,0.3f);
 
     // Main beam (long horizontal)
     drawBox(x, y, z, 22.0f, 0.6f, 0.5f);
@@ -429,7 +510,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glScalef(scale, scale, scale);
 
     // --- TRUNK ---
-    setToonMaterial(0.65f, 0.32f, 0.15f, 32.0f);
+    setRealisticMaterial(0.65f, 0.32f, 0.15f, 32.0f,0.3f);
 
     // Main trunk (twisted)
     glPushMatrix();
@@ -437,14 +518,14 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glPopMatrix();
 
     // --- MAIN BRANCHES ---
-    setToonMaterial(0.35f, 0.18f, 0.08f, 16.0f); // Slightly darker brown for branches
+    setRealisticMaterial(0.35f, 0.18f, 0.08f, 16.0f); // Slightly darker brown for branches
 
 
     // --- FOLIAGE CANOPY ---
     // Create multiple overlapping spheres for fluffy appearance
 
     // Back layer spheres - Dark green
-    setToonMaterial(0.1f, 0.4f, 0.1f, 64.0f);
+    setRealisticMaterial(0.1f, 0.4f, 0.1f, 64.0f);
 
     glPushMatrix();
     glTranslatef(-3.5f, 14.0f, -2.0f);
@@ -462,7 +543,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glPopMatrix();
 
     // Middle layer spheres - Medium green
-    setToonMaterial(0.2f, 0.6f, 0.2f, 64.0f);
+    setRealisticMaterial(0.2f, 0.6f, 0.2f, 64.0f);
 
     glPushMatrix();
     glTranslatef(-2.5f, 15.0f, -0.5f);
@@ -485,7 +566,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glPopMatrix();
 
     // Front layer spheres - Bright green
-    setToonMaterial(0.3f, 0.8f, 0.3f, 64.0f);
+    setRealisticMaterial(0.3f, 0.8f, 0.3f, 64.0f);
 
     glPushMatrix();
     glTranslatef(-1.5f, 15.5f, 1.0f);
@@ -503,7 +584,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glPopMatrix();
 
     // Top highlight spheres - Very bright green
-    setToonMaterial(0.5f, 1.0f, 0.5f, 128.0f);
+    setRealisticMaterial(0.5f, 1.0f, 0.5f, 128.0f);
 
     glPushMatrix();
     glTranslatef(-0.5f, 16.5f, 2.0f);
@@ -521,7 +602,7 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
     glPopMatrix();
 
     // Small detail spheres for extra fluffiness
-    setToonMaterial(0.4f, 0.9f, 0.4f, 128.0f);
+    setRealisticMaterial(0.4f, 0.9f, 0.4f, 128.0f);
 
     glPushMatrix();
     glTranslatef(-2.0f, 17.0f, 2.5f);
@@ -542,74 +623,61 @@ void renderCartoonTree3D(float x, float y, float z, float scale = 1.0f) {
 }
 
 
-
 void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.0f, float rotY = 0.0f, float rotZ = 0.0f) {
     glPushMatrix();
     glTranslatef(x, y, z);
 
-    // Apply rotations in order: X, Y, Z
     if (rotX != 0.0f) glRotatef(rotX, 1, 0, 0);
     if (rotY != 0.0f) glRotatef(rotY, 0, 1, 0);
     if (rotZ != 0.0f) glRotatef(rotZ, 0, 0, 1);
 
     glScalef(scale, scale, scale);
 
-    // === BASE PLATFORM ===
-    setToonMaterial(0.3f, 0.3f, 0.3f, 16.0f); // Dark gray
+    // Base platform
+    setRealisticMaterial(0.3f, 0.3f, 0.3f, 10.0f, 0.2f);
     glPushMatrix();
     glTranslatef(0, 0.2f, 0);
     drawTaperedCylinder(1.2f, 1.0f, 0.4f, 20);
     glPopMatrix();
 
-    // === MAIN POLE ===
-    setToonMaterial(0.15f, 0.15f, 0.15f, 32.0f); // Dark metal
+    // Main pole - metallic
+    setRealisticMaterial(0.2f, 0.2f, 0.2f, 10.0f, 0.8f);
     glPushMatrix();
     glTranslatef(0, 0.6f, 0);
     drawTaperedCylinder(0.15f, 0.12f, 8.0f, 16);
     glPopMatrix();
 
-    // === DECORATIVE RINGS ON POLE ===
-    setToonMaterial(0.4f, 0.4f, 0.4f, 64.0f); // Lighter metal
-
-    // Bottom ring
+    // Decorative rings - shinier metal
+    setRealisticMaterial(0.4f, 0.4f, 0.4f, 10.0f, 0.9f);
     glPushMatrix();
     glTranslatef(0, 1.5f, 0);
     drawTaperedCylinder(0.18f, 0.16f, 0.2f, 16);
     glPopMatrix();
 
-    // Middle ring
-    glPushMatrix();
-    glTranslatef(0, 4.5f, 0);
-    drawTaperedCylinder(0.17f, 0.15f, 0.15f, 16);
-    glPopMatrix();
-
-    // Top ring
-    glPushMatrix();
-    glTranslatef(0, 7.5f, 0);
-    drawTaperedCylinder(0.16f, 0.14f, 0.15f, 16);
-    glPopMatrix();
-
-    // === LAMP ARM (HORIZONTAL EXTENSION) ===
-    setToonMaterial(0.2f, 0.2f, 0.2f, 32.0f); // Dark metal
+    // Lamp arm
+    setRealisticMaterial(0.25f, 0.25f, 0.25f, 10.0f, 0.6f);
     glPushMatrix();
     glTranslatef(0.8f, 8.2f, 0);
     glRotatef(90, 0, 0, 1);
     drawTaperedCylinder(0.08f, 0.06f, 1.6f, 12);
     glPopMatrix();
 
-    // === LAMP SHADE (TOP PART) ===
-    setToonMaterial(0.1f, 0.1f, 0.1f, 16.0f); // Very dark
+    // Lamp shade
+    setRealisticMaterial(0.15f, 0.15f, 0.15f, 10.0f, 0.3f);
     glPushMatrix();
     glTranslatef(0.0f, 8.89f, 0);
     drawTaperedCylinder(0.6f, 0.4f, 0.8f, 20);
     glPopMatrix();
 
-    // === LAMP GLASS/BULB AREA ===
-    if (lampLightOn) {
-        // Bright bulb when on
-        setToonMaterial(1.0f, 1.0f, 0.8f, 128.0f); // Warm white/yellow
+    // Enhanced lamp lighting logic
+    bool shouldLampBeOn = lampLightOn && (isNightTime || dayNightTransition > 0.3f);
+    
+    if (shouldLampBeOn) {
+        // Brighter at night, dimmer during day
+        float lampIntensity = 0.3f + 0.7f * dayNightTransition;
+        setRealisticMaterial(1.0f * lampIntensity, 0.9f * lampIntensity, 0.7f * lampIntensity, 300.0f, 0.5f);
 
-        // Set up lamp light source (accounting for rotation)
+        // Enhanced light source setup
         glPushMatrix();
         glLoadIdentity();
         glTranslatef(x, y, z);
@@ -619,71 +687,32 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
         glScalef(scale, scale, scale);
 
         GLfloat lampPos[] = {1.6f, 8.5f, 0.0f, 1.0f};
-        GLfloat transformedPos[4];
-
-        // Get current modelview matrix to transform light position
-        GLfloat modelview[16];
-        glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
-
-        // Transform the light position
-        transformedPos[0] = modelview[0] * lampPos[0] + modelview[4] * lampPos[1] + modelview[8] * lampPos[2] + modelview[12];
-        transformedPos[1] = modelview[1] * lampPos[0] + modelview[5] * lampPos[1] + modelview[9] * lampPos[2] + modelview[13];
-        transformedPos[2] = modelview[2] * lampPos[0] + modelview[6] * lampPos[1] + modelview[10] * lampPos[2] + modelview[14];
-        transformedPos[3] = 1.0f;
-
-        glPopMatrix();
-
-        GLfloat lampAmbient[] = {0.2f, 0.2f, 0.1f, 1.0f}; // Warm ambient
-        GLfloat lampDiffuse[] = {0.8f, 0.8f, 0.6f, 1.0f}; // Warm diffuse
-        GLfloat lampSpecular[] = {1.0f, 1.0f, 0.9f, 1.0f}; // Bright specular
+        GLfloat lampAmbient[] = {0.3f * lampIntensity, 0.25f * lampIntensity, 0.15f * lampIntensity, 1.0f};
+        GLfloat lampDiffuse[] = {1.0f * lampIntensity, 0.8f * lampIntensity, 0.6f * lampIntensity, 1.0f};
+        GLfloat lampSpecular[] = {1.0f, 0.9f, 0.8f, 1.0f};
 
         glEnable(lampLightID);
-        glLightfv(lampLightID, GL_POSITION, transformedPos);
+        glLightfv(lampLightID, GL_POSITION, lampPos);
         glLightfv(lampLightID, GL_AMBIENT, lampAmbient);
         glLightfv(lampLightID, GL_DIFFUSE, lampDiffuse);
         glLightfv(lampLightID, GL_SPECULAR, lampSpecular);
 
-        // Set attenuation for realistic falloff
+        // Enhanced attenuation for night effect
         glLightf(lampLightID, GL_CONSTANT_ATTENUATION, 1.0f);
-        glLightf(lampLightID, GL_LINEAR_ATTENUATION, 0.05f);
-        glLightf(lampLightID, GL_QUADRATIC_ATTENUATION, 0.01f);
+        glLightf(lampLightID, GL_LINEAR_ATTENUATION, 0.02f);
+        glLightf(lampLightID, GL_QUADRATIC_ATTENUATION, 0.005f);
 
+        glPopMatrix();
     } else {
-        // Dim bulb when off
-        setToonMaterial(0.3f, 0.3f, 0.3f, 32.0f); // Gray
+        setRealisticMaterial(0.3f, 0.3f, 0.3f, 32.0f, 0.1f);
         glDisable(lampLightID);
     }
 
-    // Draw the bulb/glass
+    // Draw the bulb
     glPushMatrix();
     glTranslatef(0.0f, 8.8f, 0);
     drawColoredSphere(0.35f, 16, 12);
     glPopMatrix();
-
-    // === LAMP SHADE BOTTOM RIM ===
-    setToonMaterial(0.15f, 0.15f, 0.15f, 32.0f);
-    glPushMatrix();
-    glTranslatef(0.0f, 8.3f, 0);
-    drawTaperedCylinder(0.65f, 0.62f, 0.1f, 20);
-    glPopMatrix();
-
-    // === DECORATIVE ELEMENTS ===
-    // Small ornamental sphere at top of main pole
-    setToonMaterial(0.4f, 0.4f, 0.4f, 64.0f);
-    glPushMatrix();
-    glTranslatef(0, 8.8f, 0);
-    drawColoredSphere(0.1f, 12, 8);
-    glPopMatrix();
-
-    // Base decorative elements
-    setToonMaterial(0.35f, 0.35f, 0.35f, 48.0f);
-    for (int i = 0; i < 4; i++) {
-        glPushMatrix();
-        glRotatef(i * 90, 0, 1, 0);
-        glTranslatef(0.8f, 0.1f, 0);
-        drawColoredSphere(0.08f, 8, 6);
-        glPopMatrix();
-    }
 
     glPopMatrix();
 }
@@ -712,9 +741,37 @@ void drawDecorations() {
     glPopMatrix();
 }
 
+void timer(int value) {
+    if (isTransitioning) {
+        glutPostRedisplay();
+    }
+    glutTimerFunc(50, timer, 0); // 20 FPS for smooth transition
+}
+
+void updateDayNightTransition() {
+    if (isTransitioning) {
+        if (isNightTime) {
+            dayNightTransition += transitionSpeed;
+            if (dayNightTransition >= 1.0f) {
+                dayNightTransition = 1.0f;
+                isTransitioning = false;
+                std::cout << "Night transition complete" << std::endl;
+            }
+        } else {
+            dayNightTransition -= transitionSpeed;
+            if (dayNightTransition <= 0.0f) {
+                dayNightTransition = 0.0f;
+                isTransitioning = false;
+                std::cout << "Day transition complete" << std::endl;
+            }
+        }
+    }
+}
 
 // ========== DISPLAY ==========
 void display() {
+    updateDayNightTransition();
+    updateLighting();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -764,6 +821,7 @@ void display() {
     glutSwapBuffers();
 }
 
+
 // ========== KONTROL ==========
 void keyboard(unsigned char key, int, int) {
     switch (key) {
@@ -778,6 +836,19 @@ void keyboard(unsigned char key, int, int) {
         case 'G':
             lampLightOn = !lampLightOn;
             std::cout << "Lamp light " << (lampLightOn ? "ON" : "OFF") << std::endl;
+            break;
+        case 'n': // Toggle day/night
+        case 'N':
+            if (!isTransitioning) {
+                isNightTime = !isNightTime;
+                isTransitioning = true;
+                std::cout << "Switching to " << (isNightTime ? "NIGHT" : "DAY") << " mode" << std::endl;
+            }
+            break;
+        case 't': // Fast transition
+        case 'T':
+            dayNightTransition = isNightTime ? 1.0f : 0.0f;
+            isTransitioning = false;
             break;
         case 27: exit(0); // ESC
     }
@@ -889,6 +960,7 @@ int main(int argc, char** argv) {
     glutSpecialFunc(specialKey);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
+    glutTimerFunc(50, timer, 0);
     glutMainLoop();
     return 0;
 }
