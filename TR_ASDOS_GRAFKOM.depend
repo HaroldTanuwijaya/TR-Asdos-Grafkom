@@ -52,3 +52,37 @@
 	<GL/glut.h>
 	<iostream>
 
+1752075806 source:c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\main.cpp
+	<GL/glut.h>
+	<cmath>
+	<vector>
+	<fstream>
+	<windows.h>
+	<iostream>
+	"texture_loader.h"
+	"stb_image.h"
+
+1752074708 c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\texture_loader.h
+	<GL/glut.h>
+	"stb_image.h"
+	<iostream>
+	<fstream>
+	<windows.h>
+
+1752074708 c:\users\carlo\onedrive\documents\glut project\tr-asdos-grafkom\stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
+

@@ -14,13 +14,55 @@
 #include "stb_image.h"
 
 
-// Variabel kamera
-float cameraAngle = 0.0f;
-float cameraDistance = 25.0f;
-float cameraHeight = 5.0f;
+// Variabel kamera FPS
+float camPosX = 0.0f, camPosY = 5.0f, camPosZ = 25.0f;
+float camYaw = 0.0f, camPitch = 0.0f;
+float camSpeed = 1.0f;
+bool keyStates[256] = {0};
+bool specialKeyStates[256] = {0};
 bool isDragging = false;
 int lastMouseX = 0;
 int lastMouseY = 0;
+// Update posisi kamera FPS
+void updateCameraFPS() {
+    float radYaw = camYaw * M_PI / 180.0f;
+    float radPitch = camPitch * M_PI / 180.0f;
+    float moveSpeed = camSpeed;
+    // Forward vector (ikut yaw & pitch)
+    float forwardX = cos(radPitch) * sin(radYaw);
+    float forwardY = sin(radPitch);
+    float forwardZ = -cos(radPitch) * cos(radYaw);
+    // Right vector (hanya yaw)
+    float rightX = cos(radYaw);
+    float rightZ = sin(radYaw);
+
+    // WASD: maju/mundur/kanan/kiri mengikuti arah kamera (termasuk pitch)
+    if (keyStates['w'] || keyStates['W']) {
+        camPosX += forwardX * moveSpeed;
+        camPosY += forwardY * moveSpeed;
+        camPosZ += forwardZ * moveSpeed;
+    }
+    if (keyStates['s'] || keyStates['S']) {
+        camPosX -= forwardX * moveSpeed;
+        camPosY -= forwardY * moveSpeed;
+        camPosZ -= forwardZ * moveSpeed;
+    }
+    if (keyStates['a'] || keyStates['A']) {
+        camPosX -= rightX * moveSpeed;
+        camPosZ -= rightZ * moveSpeed;
+    }
+    if (keyStates['d'] || keyStates['D']) {
+        camPosX += rightX * moveSpeed;
+        camPosZ += rightZ * moveSpeed;
+    }
+    // Shift/Ctrl tetap naik/turun sumbu Y
+    if (keyStates[16]) { // Shift
+        camPosY += moveSpeed;
+    }
+    if (keyStates[17]) { // Ctrl
+        camPosY -= moveSpeed;
+    }
+}
 
 //Varibel warna
 GLuint pillarTexture;
@@ -818,9 +860,13 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    float camX = cameraDistance * sin(cameraAngle * M_PI / 180.0f);
-    float camZ = cameraDistance * cos(cameraAngle * M_PI / 180.0f);
-    gluLookAt(camX, cameraHeight, camZ, 0, 5, -3, 0, 1, 0);
+    updateCameraFPS();
+    float radYaw = camYaw * M_PI / 180.0f;
+    float radPitch = camPitch * M_PI / 180.0f;
+    float lookX = camPosX + cos(radPitch) * sin(radYaw);
+    float lookY = camPosY + sin(radPitch);
+    float lookZ = camPosZ - cos(radPitch) * cos(radYaw);
+    gluLookAt(camPosX, camPosY, camPosZ, lookX, lookY, lookZ, 0, 1, 0);
 
     drawGround();
 
@@ -866,30 +912,21 @@ void display() {
 
 
 // ========== KONTROL ==========
-void keyboard(unsigned char key, int, int) {
+void keyboard(unsigned char key, int x, int y) {
+    keyStates[key] = true;
     switch (key) {
-        case 'a': cameraAngle -= 5; break;
-        case 'd': cameraAngle += 5; break;
-        case 'w': cameraDistance -= 2; break;
-        case 's': cameraDistance += 2; break;
-        case 'q': cameraHeight += 1; break;
-        case 'e': cameraHeight -= 1; break;
-        case 'r': cameraAngle = 0; cameraDistance = 25; cameraHeight = 5; break;
-        case 'g': // Toggle lamp lighting
-        case 'G':
+        case 'g': case 'G':
             lampLightOn = !lampLightOn;
             std::cout << "Lamp light " << (lampLightOn ? "ON" : "OFF") << std::endl;
             break;
-        case 'n': // Toggle day/night
-        case 'N':
+        case 'n': case 'N':
             if (!isTransitioning) {
                 isNightTime = !isNightTime;
                 isTransitioning = true;
                 std::cout << "Switching to " << (isNightTime ? "NIGHT" : "DAY") << " mode" << std::endl;
             }
             break;
-        case 't': // Fast transition
-        case 'T':
+        case 't': case 'T':
             dayNightTransition = isNightTime ? 1.0f : 0.0f;
             isTransitioning = false;
             break;
@@ -898,54 +935,40 @@ void keyboard(unsigned char key, int, int) {
     glutPostRedisplay();
 }
 
-void specialKey(int key, int, int) {
-    switch (key) {
-        case GLUT_KEY_LEFT:  cameraAngle -= 5; break;  // like 'a'
-        case GLUT_KEY_RIGHT: cameraAngle += 5; break;  // like 'd'
-        case GLUT_KEY_UP:    cameraDistance -= 2; break; // like 'w'
-        case GLUT_KEY_DOWN:  cameraDistance += 2; break; // like 's'
-    }
-    glutPostRedisplay();
+void keyboardUp(unsigned char key, int x, int y) {
+    keyStates[key] = false;
+}
+
+void specialKey(int key, int x, int y) {
+    specialKeyStates[key] = true;
+}
+void specialKeyUp(int key, int x, int y) {
+    specialKeyStates[key] = false;
 }
 
 
-//mouse movement
+
+// Mouse FPS style
 void mouseButton(int button, int state, int x, int y) {
-    if (button == GLUT_LEFT_BUTTON) {
-        if (state == GLUT_DOWN) {
-            isDragging = true;
-            lastMouseX = x;
-            lastMouseY = y;
-        } else {
-            isDragging = false;
-        }
-    }
-
-    // Scroll wheel zoom
-    if (state == GLUT_DOWN) {
-        if (button == 3) { // Scroll up
-            cameraDistance -= 1.0f;
-            if (cameraDistance < 5.0f) cameraDistance = 5.0f;
-        } else if (button == 4) { // Scroll down
-            cameraDistance += 1.0f;
-            if (cameraDistance > 80.0f) cameraDistance = 80.0f;
-        }
-        glutPostRedisplay();
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        isDragging = true;
+        lastMouseX = x;
+        lastMouseY = y;
+    } else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        isDragging = false;
     }
 }
-
 
 void mouseMotion(int x, int y) {
     if (isDragging) {
         int dx = x - lastMouseX;
         int dy = y - lastMouseY;
-
-        cameraAngle += dx * 0.5f;     // rotate left/right
-        cameraHeight += dy * 0.1f;    // move up/down
-
+        camYaw += dx * 0.3f;
+        camPitch -= dy * 0.2f;
+        if (camPitch > 89.0f) camPitch = 89.0f;
+        if (camPitch < -89.0f) camPitch = -89.0f;
         lastMouseX = x;
         lastMouseY = y;
-
         glutPostRedisplay();
     }
 }
@@ -983,7 +1006,7 @@ void setup() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(45.0, 1.333, 1.0, 100.0);
+    gluPerspective(45.0, 1.333, 1.0, 500.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -1000,10 +1023,12 @@ int main(int argc, char** argv) {
     setup();
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
+    glutKeyboardUpFunc(keyboardUp);
     glutSpecialFunc(specialKey);
+    glutSpecialUpFunc(specialKeyUp);
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMotion);
-    glutTimerFunc(50, timer, 0);
+    glutTimerFunc(16, timer, 0); // ~60 FPS
     glutMainLoop();
     return 0;
 }
