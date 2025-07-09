@@ -68,6 +68,7 @@ void updateCameraFPS() {
 GLuint pillarTexture;
 GLuint logoTexture;
 
+
 //light variable
 bool lampLightOn = true;
 GLuint lampLightID = GL_LIGHT1;
@@ -624,6 +625,8 @@ void drawCenterPillar() {
 
     setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
+
+
     //tempat logo
     setRealisticMaterial(0.9f, 0.88f, 0.85f, 0.0f,0.3f);
     drawBox(0, 14.3f, -1.1f, 3.5f, 3.0f, 0.4f);
@@ -989,6 +992,67 @@ void drawPlantPot(float x, float z) {
     glPopMatrix();
 }
 
+void drawPlanterBox(float x, float y, float z, float width, float height, float depth) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // --- 1. Gambar Pot Persegi Panjang ---
+    // Menggunakan material putih bersih seperti pada gambar referensi
+    setRealisticMaterial(0.95f, 0.95f, 0.95f, 10.0f, 0.1f);
+    drawBox(0.0f, height / 2.0f, 0.0f, width, height, depth);
+
+    // --- 2. Gambar Tanah di Dalam Pot ---
+    setRealisticMaterial(0.3f, 0.18f, 0.1f, 1.0f, 0.0f); // Warna tanah gelap
+    glPushMatrix();
+    // Posisi tanah sedikit di bawah bibir atas pot
+    glTranslatef(0.0f, height - 0.1f, 0.0f);
+    drawBox(0.0f, 0.0f, 0.0f, width * 0.95f, 0.2f, depth * 0.95f);
+    glPopMatrix();
+
+    // --- 3. Gambar Tanaman Lebat ---
+    int numPlants = int(width * depth * 0.5f); // Jumlah tanaman berdasarkan luas pot
+    srand(x * 100 + z); // Seed acak berdasarkan posisi agar setiap pot unik
+
+    for (int i = 0; i < numPlants; ++i) {
+        // Tentukan posisi acak untuk setiap tanaman di dalam pot
+        float plantX = ((rand() % 100) / 100.0f - 0.5f) * width * 0.9f;
+        float plantZ = ((rand() % 100) / 100.0f - 0.5f) * depth * 0.9f;
+
+        glPushMatrix();
+        glTranslatef(plantX, height, plantZ);
+
+        // Gambar Batang (silinder tipis dan gelap)
+        setRealisticMaterial(0.1f, 0.15f, 0.1f, 1.0f, 0.0f);
+        float plantHeight = 1.5f + (rand() % 100) / 100.0f * 1.5f; // Tinggi acak
+        drawTaperedCylinder(0.05f, 0.03f, plantHeight, 6);
+
+        // Gambar Dedaunan (kumpulan bola hijau di atas batang)
+        glTranslatef(0.0f, plantHeight, 0.0f);
+        int numLeaves = 5 + (rand() % 5);
+        for (int j = 0; j < numLeaves; ++j) {
+            // Variasi warna hijau daun
+            float r = 0.1f + (rand() % 10) / 50.0f;
+            float g = 0.4f + (rand() % 20) / 100.0f;
+            float b = 0.1f + (rand() % 10) / 50.0f;
+            setRealisticMaterial(r, g, b, 5.0f, 0.1f);
+
+            // Posisi acak untuk setiap gumpalan daun
+            float leafX = ((rand() % 100) - 50) / 150.0f;
+            float leafY = ((rand() % 100) / 100.0f) * 0.8f;
+            float leafZ = ((rand() % 100) - 50) / 150.0f;
+
+            glPushMatrix();
+            glTranslatef(leafX, leafY, leafZ);
+            drawColoredSphere(0.3f + (rand() % 10) / 50.0f, 6, 5);
+            glPopMatrix();
+        }
+        glPopMatrix();
+    }
+
+    glPopMatrix();
+}
+
+
 // Fungsi untuk menggambar satu bagian pagar
 void drawFenceSection(float x, float z) {
     glPushMatrix();
@@ -1179,6 +1243,12 @@ void display() {
     renderCartoonTree3D(0, 0, -20, 1.0f);
     renderCartoonTree3D(3, 0, -25, 1.0f);
     renderCartoonTree3D(-4, 0, -30, 1.0f);
+
+    //pot plant
+    drawPlanterBox(-12.0f, 0.0f, 8.0f, 8.0f, 2.0f, 2.5f); // x, y, z, lebar, tinggi, kedalaman
+
+    // Pot di sisi kanan gerbang
+    drawPlanterBox(12.0f, 0.0f, 8.0f, 8.0f, 2.0f, 2.5f);
 
 
     //param (x,y,z,scale,RotX,RotY,RotZ)
