@@ -747,21 +747,14 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
         float lampIntensity = 0.3f + 0.7f * dayNightTransition;
         setRealisticMaterial(1.0f * lampIntensity, 0.9f * lampIntensity, 0.7f * lampIntensity, 300.0f, 0.5f);
 
-        // Enhanced light source setup
-        glPushMatrix();
-        glLoadIdentity();
-        glTranslatef(x, y, z);
-        if (rotX != 0.0f) glRotatef(rotX, 1, 0, 0);
-        if (rotY != 0.0f) glRotatef(rotY, 0, 1, 0);
-        if (rotZ != 0.0f) glRotatef(rotZ, 0, 0, 1);
-        glScalef(scale, scale, scale);
-
+        // Lamp position in local coordinates (relative to lamppost origin)
         GLfloat lampPos[] = {1.6f, 8.5f, 0.0f, 1.0f};
         GLfloat lampAmbient[] = {0.3f * lampIntensity, 0.25f * lampIntensity, 0.15f * lampIntensity, 1.0f};
         GLfloat lampDiffuse[] = {1.0f * lampIntensity, 0.8f * lampIntensity, 0.6f * lampIntensity, 1.0f};
         GLfloat lampSpecular[] = {1.0f, 0.9f, 0.8f, 1.0f};
 
         glEnable(lampLightID);
+        // Set lamp light position after all transforms (so it follows the lamppost in world space)
         glLightfv(lampLightID, GL_POSITION, lampPos);
         glLightfv(lampLightID, GL_AMBIENT, lampAmbient);
         glLightfv(lampLightID, GL_DIFFUSE, lampDiffuse);
@@ -771,8 +764,6 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
         glLightf(lampLightID, GL_CONSTANT_ATTENUATION, 1.0f);
         glLightf(lampLightID, GL_LINEAR_ATTENUATION, 0.02f);
         glLightf(lampLightID, GL_QUADRATIC_ATTENUATION, 0.005f);
-
-        glPopMatrix();
     } else {
         setRealisticMaterial(0.3f, 0.3f, 0.3f, 0.0f, 0.1f);
         glDisable(lampLightID);
