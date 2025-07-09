@@ -339,6 +339,75 @@ void drawBox(float x, float y, float z, float w, float h, float d) {
     glutSolidCube(1.0f);
     glPopMatrix();
 }
+
+void drawFlutedCylinder(float baseRadius, float topRadius, float height, int numFlutes) {
+    float angleStep = 2.0f * M_PI / numFlutes;
+    float fluteDepth = 0.05f; // Depth of the flute relative to the main radius
+
+    glBegin(GL_QUADS);
+    for (int i = 0; i < numFlutes; ++i) {
+        float angle1 = i * angleStep;
+        float angle2 = (i + 1) * angleStep;
+        float midAngle = (angle1 + angle2) / 2.0f;
+
+        // Outer points (the "arris" or sharp edge)
+        float x1_outer_bot = baseRadius * cos(angle1);
+        float z1_outer_bot = baseRadius * sin(angle1);
+        float x1_outer_top = topRadius * cos(angle1);
+        float z1_outer_top = topRadius * sin(angle1);
+
+        // Inner point (the bottom of the flute)
+        float innerRadius_bot = baseRadius - fluteDepth;
+        float innerRadius_top = topRadius - fluteDepth;
+        float x_inner_bot = innerRadius_bot * cos(midAngle);
+        float z_inner_bot = innerRadius_bot * sin(midAngle);
+        float x_inner_top = innerRadius_top * cos(midAngle);
+        float z_inner_top = innerRadius_top * sin(midAngle);
+
+        // --- First half of the flute ---
+        // Normal vector for the first face
+        float nx1 = cos((angle1 + midAngle) / 2.0f);
+        float nz1 = sin((angle1 + midAngle) / 2.0f);
+        glNormal3f(nx1, 0, nz1);
+        glVertex3f(x1_outer_bot, 0, z1_outer_bot);
+        glVertex3f(x_inner_bot, 0, z_inner_bot);
+        glVertex3f(x_inner_top, height, z_inner_top);
+        glVertex3f(x1_outer_top, height, z1_outer_top);
+
+        // --- Second half of the flute ---
+        // Normal vector for the second face
+        float nx2 = cos((midAngle + angle2) / 2.0f);
+        float nz2 = sin((midAngle + angle2) / 2.0f);
+        glNormal3f(nx2, 0, nz2);
+        glVertex3f(x_inner_bot, 0, z_inner_bot);
+        glVertex3f(baseRadius * cos(angle2), 0, baseRadius * sin(angle2));
+        glVertex3f(topRadius * cos(angle2), height, topRadius * sin(angle2));
+        glVertex3f(x_inner_top, height, z_inner_top);
+    }
+    glEnd();
+
+    // Draw bottom cap
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0, -1, 0);
+    glVertex3f(0, 0, 0);
+    for (int i = 0; i <= numFlutes; i++) {
+        float angle = i * angleStep;
+        glVertex3f(baseRadius * cos(angle), 0, baseRadius * sin(angle));
+    }
+    glEnd();
+
+    // Draw top cap
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0, 1, 0);
+    glVertex3f(0, height, 0);
+    for (int i = 0; i <= numFlutes; i++) {
+        float angle = i * angleStep;
+        glVertex3f(topRadius * cos(angle), height, topRadius * sin(angle));
+    }
+    glEnd();
+}
+
+
 void drawTexturedCircle(float radius, GLuint textureID) {
     // Save current lighting state
     GLboolean lightingEnabled = glIsEnabled(GL_LIGHTING);
@@ -489,6 +558,40 @@ void drawGround() {
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, 20.0f, 100.0f, 0.1f, 50.0f);
 }
+void drawGreekPillar(float x, float y, float z) {
+    glPushMatrix();
+    // Move the entire pillar to the desired position
+    glTranslatef(x, y, z);
+
+    // Set material to a white marble/stone color
+    setRealisticMaterial(0.9f, 0.88f, 0.85f, 5.0f, 0.2f);
+
+    // --- 1. Pillar Base ---
+    // A square plinth at the very bottom
+    drawBox(0, 0.25f, 0, 2.0f, 0.5f, 2.0f);
+    // A cylindrical base on top of the plinth
+    glPushMatrix();
+    glTranslatef(0, 0.5f, 0);
+    drawTaperedCylinder(0.9f, 1.0f, 0.3f, 32);
+    glPopMatrix();
+
+    // --- 2. Pillar Shaft ---
+    glPushMatrix();
+    glTranslatef(0, 0.8f, 0); // Position shaft on top of the base
+    drawFlutedCylinder(0.8f, 0.7f, 10.0f, 20); // baseRadius, topRadius, height, numFlutes
+    glPopMatrix();
+
+    // --- 3. Pillar Capital (Top) ---
+    // Echinus (the flared, cushion-like part)
+    glPushMatrix();
+    glTranslatef(0, 10.8f, 0); // Position capital on top of the shaft
+    drawTaperedCylinder(0.7f, 1.1f, 0.5f, 32);
+    glPopMatrix();
+    // Abacus (the square slab on top)
+    drawBox(0, 11.3f, 0, 2.2f, 0.4f, 2.2f);
+
+    glPopMatrix();
+}
 
 void drawMainPillar(float x, float angle) {
     glPushMatrix();
@@ -568,13 +671,6 @@ void drawSideWallAbove(float x, float y, float z) {
 }
 
 
-void drawSmallPillar(float x, float z) {
-    setRealisticMaterial(0.95f, 0.95f, 0.95f, 32.0f,0.3f);
-    drawCylinder(x, 0.0f, z, 0.2f, 11.5f); // lebih tinggi
-
-    glColor3f(0.90f, 0.90f, 0.90f);
-    drawBox(x, 11.7f, z, 0.5f, 0.5f, 0.5f);
-}
 
 void drawConnectingBeamAt(float x, float y, float z) {
     setRealisticMaterial(0.85f, 0.85f, 0.85f, 0.0f,0.3f);
@@ -1065,13 +1161,14 @@ void display() {
      drawPlantPot(-4.0f,item_z_pos -16.5f);
      drawPlantPot(-4.5f,item_z_pos -17.5f);
 
-    // Pilar putih kiri-kanan (3 tiap sisi)
-    drawSmallPillar(-22.5f, -1.0f);
-    drawSmallPillar(-20.0f, -1.0f);
-    drawSmallPillar(-17.5f, -1.0f);
-    drawSmallPillar(17.5f, -1.0);
-    drawSmallPillar(20.0f, -1.0f);
-    drawSmallPillar(22.5f, -1.0f);
+
+    //greek pillar 
+    drawGreekPillar(-24.5f, 0.0f, -1.0f); // A pillar on the left
+    drawGreekPillar(-22.0f, 0.0f, -1.0f);  // A pillar on the right
+    drawGreekPillar(-19.0f, 0.0f, -1.0f);
+    drawGreekPillar(19.0f, 0.0f, -1.0f);
+    drawGreekPillar(22.0f, 0.0f, -1.0f);
+    drawGreekPillar(24.0f, 0.0f, -1.0f);
 
     //pohon gede kiri
     renderCartoonTree3D(-22, 0, -10, 1.0f);
