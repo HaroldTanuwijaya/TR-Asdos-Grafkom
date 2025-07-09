@@ -787,6 +787,66 @@ void drawLamppost(float x, float y, float z, float scale = 1.0f, float rotX = 0.
     glPopMatrix();
 }
 
+// Fungsi untuk menggambar satu pot bunga beserta tanamannya
+void drawPlantPot(float x, float z) {
+    glPushMatrix();
+    glTranslatef(x, 0.1f, z); // Posisikan pot di atas trotoar
+
+    // Gambar Pot menggunakan silinder meruncing
+    // Bagian utama pot berwarna putih keabu-abuan
+    setRealisticMaterial(0.9f, 0.9f, 0.9f, 1.0f, 0.2f);
+    drawTaperedCylinder(0.4f, 0.6f, 0.8f, 16);
+
+    // Tambahkan list biru di bagian atas pot
+    glPushMatrix();
+    glTranslatef(0, 0.7f, 0);
+    setRealisticMaterial(0.2f, 0.3f, 0.8f, 1.0f, 0.3f);
+    drawTaperedCylinder(0.61f, 0.61f, 0.1f, 16); // Sedikit lebih lebar dari pot
+    glPopMatrix();
+
+    // Gambar tanah di dalam pot
+    glPushMatrix();
+    glTranslatef(0, 0.8f, 0);
+    setRealisticMaterial(0.4f, 0.25f, 0.15f, 1.0f, 0.1f);
+    drawTaperedCylinder(0.55f, 0.55f, 0.05f, 16); // Disk tipis untuk tanah
+    glPopMatrix();
+
+    // Gambar Tanaman (beberapa bola hijau yang tumpang tindih)
+    setRealisticMaterial(0.1f, 0.5f, 0.15f, 1.0f, 0.2f); // Warna daun
+    glPushMatrix();
+    glTranslatef(0.1f, 1.2f, 0.1f);
+    drawColoredSphere(0.4f);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-0.1f, 1.1f, -0.2f);
+    drawColoredSphere(0.35f);
+    glPopMatrix();
+
+    setRealisticMaterial(0.2f, 0.7f, 0.25f, 1.0f, 0.2f); // Warna daun lebih terang
+    glPushMatrix();
+    glTranslatef(0.0f, 1.4f, 0.0f);
+    drawColoredSphere(0.45f);
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
+// Fungsi untuk menggambar satu bagian pagar
+void drawFenceSection(float x, float z) {
+    glPushMatrix();
+    glTranslatef(x, 0.1f, z);
+
+    // Tiang utama pagar yang besar
+    setRealisticMaterial(0.8f, 0.8f, 0.8f, 0.0f, 0.2f);
+    drawBox(0.0f, 0.75f, 0.0f, 0.8f, 3.5f, 0.8f);
+
+    // Bagian railing (disederhanakan menjadi sebuah balok)
+    setRealisticMaterial(0.5f, 0.5f, 0.5f, 0.0f, 0.5f);
+    drawBox(2.5f, 0.8f, 0.0f, 4.2f, 3.0f, 0.3f);
+
+    glPopMatrix();
+}
 
 void drawDecorations() {
     // Ornamen kecil di pilar tengah
@@ -870,6 +930,10 @@ void updateDayNightTransition() {
 
 // ========== DISPLAY ==========
 void display() {
+
+    float item_z_pos = 4.0f;
+
+
     updateDayNightTransition();
     updateLighting();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -885,6 +949,28 @@ void display() {
 
     drawGround();
     drawRoadMarkings();
+
+    // Pagar di sisi kiri
+    for(float x = -50.0f; x <= -18.0f; x += 5.0f) {
+        drawFenceSection(x, item_z_pos);
+    }
+    // Pagar di sisi kanan (diperpanjang)
+    // Loop berjalan dari 18.0f hingga 48.0f
+    for(float x = 18.0f; x <= 50.0f; x += 5.0f) {
+        drawFenceSection(x, item_z_pos);
+    }
+
+        // Pot di sisi kiri (di depan pagar)
+    drawPlantPot(-22.0f, item_z_pos + 1.5f);
+    drawPlantPot(-18.0f, item_z_pos + 1.5f);
+    drawPlantPot(-26.0f,item_z_pos + 1.5f);
+
+    // Pot di sisi kanan (di depan pagar)
+    drawPlantPot(18.0f, item_z_pos + 1.5f);
+    drawPlantPot(22.0f, item_z_pos + 1.5f);
+    drawPlantPot(26.0f,item_z_pos + 1.5f);
+
+
     drawMainPillar(-13.0f,180.0f);
     drawMainPillar(13.0f,0.0f);
     drawCenterPillar();
