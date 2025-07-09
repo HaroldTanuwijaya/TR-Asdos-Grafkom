@@ -690,13 +690,13 @@ void drawCenterPillar() {
 }
 
 void drawSideWall(float x, float y, float z) {
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 1.0f,0.3f);
 
     drawBox(x, y, z, 5.6f, 16.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
 
 void drawSideWallAbove(float x, float y, float z) {
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
+    setRealisticMaterial(0.75f, 0.60f, 0.45f, 1.0f,0.3f);
 
     drawBox(x, y, z, 4.0f, 7.0f, 4.0f); // Ukuran default, bisa kamu ubah sesuai desain
 }
@@ -1080,6 +1080,117 @@ void drawPlanterBox(float x, float y, float z, float width, float height, float 
     glPopMatrix();
 }
 
+// ... (setelah fungsi drawPlanterBox atau fungsi gambar lainnya)
+
+/**
+ * @brief Menggambar gumpalan rumput yang lebat.
+ */
+void drawGrassLump(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    int numBlades = 20; // Jumlah helai rumput per gumpalan
+    for (int i = 0; i < numBlades; ++i) {
+        glPushMatrix();
+        
+        // Warna hijau rumput dengan sedikit variasi
+        setRealisticMaterial(0.1f + (rand() % 10) / 80.0f, 0.4f + (rand() % 20) / 100.0f, 0.1f, 2.0f, 0.05f);
+        
+        // Rotasi acak agar rumput tidak seragam
+        glRotatef(((rand() % 40) - 20), 1.0f, 0.0f, 0.0f);
+        glRotatef(((rand() % 40) - 20), 0.0f, 0.0f, 1.0f);
+
+        float height = 0.8f + ((rand() % 100) / 100.0f) * 0.5f;
+        drawTaperedCylinder(0.02f, 0.005f, height, 4); // Gambar helai rumput sebagai silinder tipis
+        
+        glPopMatrix();
+    }
+    glPopMatrix();
+}
+
+/**
+ * @brief Menggambar tanaman berdaun.
+ */
+void drawLeafyPlant(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // Batang utama
+    setRealisticMaterial(0.2f, 0.3f, 0.15f, 1.0f, 0.1f);
+    float height = 1.2f + ((rand() % 100) / 100.0f) * 0.8f;
+    drawTaperedCylinder(0.08f, 0.05f, height, 6);
+
+    // Dedaunan (menggunakan quad)
+    setRealisticMaterial(0.2f, 0.6f, 0.2f, 5.0f, 0.1f);
+    int numLeaves = 6;
+    for (int i = 0; i < numLeaves; ++i) {
+        glPushMatrix();
+        // Sebar daun di sepanjang batang
+        glTranslatef(0.0f, height * (0.4f + (float)i / (numLeaves * 1.5f)), 0.0f);
+        glRotatef(float(rand() % 360), 0.0f, 1.0f, 0.0f); // Rotasi Y acak
+        glRotatef(30 + (rand() % 40), 1.0f, 0.0f, 1.0f); // Kemiringan daun
+
+        // Gambar daun sebagai quad
+        float leafSize = 0.4f;
+        glBegin(GL_QUADS);
+            glNormal3f(0.0, 1.0, 0.0);
+            glVertex3f(0, 0, 0);
+            glVertex3f(leafSize, leafSize * 0.3f, 0);
+            glVertex3f(0, leafSize * 1.2f, 0);
+            glVertex3f(-leafSize, leafSize * 0.3f, 0);
+        glEnd();
+
+        glPopMatrix();
+    }
+    glPopMatrix();
+}
+
+
+/**
+ * @brief Menggambar pot persegi panjang abu-abu dengan bibir putih, diisi tanaman bervariasi.
+ * @param x Posisi X dunia.
+ * @param y Posisi Y dunia (dasar pot).
+ * @param z Posisi Z dunia.
+ * @param width Lebar pot (sepanjang sumbu X).
+ * @param height Tinggi pot.
+ * @param depth Kedalaman pot (sepanjang sumbu Z).
+ */
+void drawLushPlanterBox(float x, float y, float z, float width, float height, float depth) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // --- 1. Gambar Pot ---
+    // Badan pot abu-abu
+    setRealisticMaterial(0.4f, 0.4f, 0.42f, 5.0f, 0.1f);
+    drawBox(0.0f, (height - height * 0.1f) / 2.0f, 0.0f, width, height - height * 0.1f, depth);
+
+    // Bibir pot putih di atas
+    setRealisticMaterial(0.9f, 0.9f, 0.9f, 10.0f, 0.1f);
+    drawBox(0.0f, height - (height * 0.1f / 2.0f), 0.0f, width, height * 0.1f, depth);
+
+    // --- 2. Gambar Tanah di Dalam Pot ---
+    setRealisticMaterial(0.3f, 0.18f, 0.1f, 1.0f, 0.0f);
+    drawBox(0.0f, height * 0.9f, 0.0f, width * 0.95f, 0.1f, depth * 0.95f);
+
+    // --- 3. Gambar Tanaman (Campuran Rumput dan Tanaman Berdaun) ---
+    int numPlants = int(width * depth * 0.8f); // Kepadatan tanaman
+    srand(x * 100 + z); // Seed acak agar setiap pot unik
+
+    for (int i = 0; i < numPlants; ++i) {
+        float plantX = ((rand() % 100) / 100.0f - 0.5f) * width * 0.9f;
+        float plantZ = ((rand() % 100) / 100.0f - 0.5f) * depth * 0.9f;
+        
+        // Pilih jenis tanaman secara acak
+        int plantType = rand() % 5; // Probabilitas 3:2 untuk rumput vs tanaman daun
+        if (plantType < 3) {
+            drawGrassLump(plantX, height, plantZ);
+        } else {
+            drawLeafyPlant(plantX, height, plantZ);
+        }
+    }
+
+    glPopMatrix();
+}
 
 // Fungsi untuk menggambar satu bagian pagar
 void drawFenceSection(float x, float z) {
@@ -1180,7 +1291,7 @@ void updateDayNightTransition() {
 // ========== DISPLAY ==========
 void display() {
 
-    float item_z_pos = 4.0f;
+    float item_z_pos = 1.0f;
 
 
     updateDayNightTransition();
@@ -1199,14 +1310,14 @@ void display() {
     drawGround();
     drawRoadMarkings();
     //palang trotoar kiri
-    drawCustomCylinder(-20.0f, 0.0f, 8.0f,0.3f , 2.0f , 32);
-    drawCustomCylinder(-20.0f, 0.0f, 10.0f,0.3f , 2.0f , 32);
-    drawCustomCylinder(-20.0f, 0.0f, 12.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(-20.0f, 0.0f, 8.0f-3,0.3f , 2.0f , 32);
+    drawCustomCylinder(-20.0f, 0.0f, 10.0f-3,0.3f , 2.0f , 32);
+    drawCustomCylinder(-20.0f, 0.0f, 12.0f-3,0.3f , 2.0f , 32);
 
     //palang trotoar kanan
-    drawCustomCylinder(20.0f, 0.0f, 8.0f,0.3f , 2.0f , 32);
-    drawCustomCylinder(20.0f, 0.0f, 10.0f,0.3f , 2.0f , 32);
-    drawCustomCylinder(20.0f, 0.0f, 12.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(20.0f, 0.0f, 8.0f-3, 0.3f , 2.0f , 32);
+    drawCustomCylinder(20.0f, 0.0f, 10.0f-3, 0.3f , 2.0f , 32);
+    drawCustomCylinder(20.0f, 0.0f, 12.0f-3, 0.3f , 2.0f , 32);
     //float x, float y, float z, float radius, float height, int segments = 32
     
     // Pagar di sisi kiri
@@ -1283,17 +1394,23 @@ void display() {
     renderCartoonTree3D(-4, 0, -30, 1.0f);
 
     //pot plant
-    drawPlanterBox(-12.0f, 0.0f, 8.0f, 8.0f, 2.0f, 2.5f); // x, y, z, lebar, tinggi, kedalaman
-
+    drawPlanterBox(-40.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f); // x, y, z, lebar, tinggi, kedalaman
     // Pot di sisi kanan gerbang
-    drawPlanterBox(12.0f, 0.0f, 8.0f, 8.0f, 2.0f, 2.5f);
+    drawPlanterBox(40.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f);
+    drawPlanterBox(30.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f);
+    drawPlanterBox(-30.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f);
+
+    // drawLushPlanterBox(-12.0f, 0.0f, 8.0f, 8.0f, 1.5f, 2.5f); // Pot di kiri
+    // drawLushPlanterBox(12.0f, 0.0f, 8.0f, 8.0f, 1.5f, 2.5f); 
 
 
     //param (x,y,z,scale,RotX,RotY,RotZ)
-    drawLamppost(-25.0f, 0.0f, 12.2f, 1.0f, 0.0f, 45.0f, 0.0f);     // Left far (angled)
-    drawLamppost(25.0f, 0.0f, 12.2f, 1.0f, 0.0f, -45.0f, 0.0f);     // Right far (angled)
+    drawLamppost(-25.0f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);     // Left far (angled)
+    drawLamppost(25.0f, 0.0f, 12.2f, 1.0f, 0.0f, 45.0f, 0.0f);     // Right far (angled)
     drawLamppost(12.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
     drawLamppost(-12.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
+    drawLamppost(-36.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
+    drawLamppost(36.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
 
 
     drawDecorations();
