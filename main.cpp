@@ -372,10 +372,6 @@ void drawCylinder(float x, float y, float z, float radius, float height) {
     glPopMatrix();
 }
 void drawLogo(float x, float y, float z, float size, float rotX = 0, float rotY = 0, float rotZ = 0, bool useCircle = false) {
-    if (logoTexture == 0) {
-        std::cout << "Warning: logoTexture is 0, texture not loaded!" << std::endl;
-        return;
-    }
 
     glPushMatrix();
     glTranslatef(x, y, z);
@@ -461,17 +457,12 @@ void drawCenterPillar() {
 
     setRealisticMaterial(0.75f, 0.60f, 0.45f, 32.0f,0.3f);
     drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
-
-    drawBox(0, 16.0f, -5.8f, 3.5f, 3.0f, 0.4f);
-        // Logo circle (simplified representation)
-    glPushMatrix();
-    glTranslatef(0, 16.0f, -5.5f);
-    setMaterial(0.8f, 0.2f, 0.2f, 60.0f, 0.8f); // Red circle
-    glutSolidSphere(1.0f, 20, 20);
-    glPopMatrix();
+    //tempat logo
+    setRealisticMaterial(0.9f, 0.88f, 0.85f, 32.0f,0.3f);
+    drawBox(0, 14.3f, -1.1f, 3.5f, 3.0f, 0.4f);
 
     // Parameters: x, y, z, size, rotX, rotY, rotZ, useCircle
-     drawLogo(0.0f, 14.5f, -1.1f, 3.0f, 180, 0, 0, true);  // Front face
+     drawLogo(0.0f, 14.3f, -0.89f, 3.0f, 180, 0, 0, true);  // Front face
      renderStrokeTextAtBold("UNIVERSITAS KRISTEN",
                    -2.0f, 12.1f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
