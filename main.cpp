@@ -1,4 +1,3 @@
-
 #include <GL/glut.h>
 #include <cmath>
 #include <vector>
@@ -407,6 +406,26 @@ void drawFlutedCylinder(float baseRadius, float topRadius, float height, int num
     glEnd();
 }
 
+// Fungsi untuk menggambar silinder dengan radius dan posisi yang bisa diatur
+void drawCustomCylinder(float x, float y, float z, float radius, float height, int segments = 32) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glRotatef(-90, 1, 0, 0); // Agar sumbu Y menjadi sumbu utama silinder
+    GLUquadric* quad = gluNewQuadric();
+    gluCylinder(quad, radius, radius, height, segments, 1);
+    // Tutup bawah
+    glPushMatrix();
+    glRotatef(180, 1, 0, 0);
+    gluDisk(quad, 0, radius, segments, 1);
+    glPopMatrix();
+    // Tutup atas
+    glPushMatrix();
+    glTranslatef(0, 0, height);
+    gluDisk(quad, 0, radius, segments, 1);
+    glPopMatrix();
+    gluDeleteQuadric(quad);
+    glPopMatrix();
+}
 
 void drawTexturedCircle(float radius, GLuint textureID) {
     // Save current lighting state
@@ -525,8 +544,6 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 
 
 
-
-
 // ========== KOMPONEN UTAMA ==========
 void drawRoadMarkings() {
     setRealisticMaterial(0.9f, 0.9f, 0.9f, 0.0f, 0.05f);
@@ -616,14 +633,14 @@ void drawMainPillar(float x, float angle) {
 
 
 void drawCenterPillar() {
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
-    drawBox(0, 8.0f, -3.0f, 5.0f, 16.0f, 3.5f);
 
+    //pilar utama
     setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
-    drawBox(0, 10.0f, -2.3f, 2.0f, 2.0f, 0.3f);
+    drawBox(0, 8.0f, -4.0f, 7.0f, 16.0f, 5.5f);
 
-    setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
-    drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
+    // setRealisticMaterial(0.75f, 0.60f, 0.45f, 0.0f,0.3f);
+    // drawBox(0, 16.5f, -3.0f, 2.8f, 1.0f, 3.5f);
+    
     //tempat logo
     setRealisticMaterial(0.9f, 0.88f, 0.85f, 0.0f,0.3f);
     drawBox(0, 14.3f, -1.1f, 3.5f, 3.0f, 0.4f);
@@ -652,6 +669,20 @@ void drawCenterPillar() {
                    0.003f,20);              // Skala teks
     renderStrokeTextAtBold("SATYA WACANA",
                    -2.0f, 11.5f, -1.1f, //posisi x,y,z
+                   0, 0, 0,    // Rotasi X, Y, Z
+                   0.004f,20);              // Skala teks
+
+                   renderStrokeTextAtBold("KAMPUS UKSW",
+                   -1.5f, 6.9f, -1.1f, //posisi x,y,z
+                   0, 0, 0,    // Rotasi X, Y, Z
+                   0.003f,20);              // Skala teks
+    renderStrokeTextAtBold("1NDONESIA",
+                   -2.6f, 6.0f, -1.1f, //posisi x,y,z
+                   0, 0, 0,    // Rotasi X, Y, Z
+                   0.008f,20);              // Skala teks
+    
+    renderStrokeTextAtBold("Mini",
+                   0.5f, 5.5f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
                    0.004f,20);              // Skala teks
     glPopAttrib();
@@ -1106,7 +1137,17 @@ void display() {
 
     drawGround();
     drawRoadMarkings();
+    //palang trotoar kiri
+    drawCustomCylinder(-20.0f, 0.0f, 8.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(-20.0f, 0.0f, 10.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(-20.0f, 0.0f, 12.0f,0.3f , 2.0f , 32);
 
+    //palang trotoar kanan
+    drawCustomCylinder(20.0f, 0.0f, 8.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(20.0f, 0.0f, 10.0f,0.3f , 2.0f , 32);
+    drawCustomCylinder(20.0f, 0.0f, 12.0f,0.3f , 2.0f , 32);
+    //float x, float y, float z, float radius, float height, int segments = 32
+    
     // Pagar di sisi kiri
     for(float x = -50.0f; x <= -18.0f; x += 5.0f) {
         glPushMatrix();
@@ -1191,7 +1232,6 @@ void display() {
     drawDecorations();
     glutSwapBuffers();
 }
-
 
 // ========== KONTROL ==========
 void keyboard(unsigned char key, int x, int y) {
