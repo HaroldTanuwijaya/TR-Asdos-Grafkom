@@ -526,16 +526,32 @@ void drawCenterPillar() {
     drawBox(0, 14.3f, -1.1f, 3.5f, 3.0f, 0.4f);
 
     // Parameters: x, y, z, size, rotX, rotY, rotZ, useCircle
-     drawLogo(0.0f, 14.3f, -0.89f, 3.0f, 180, 0, 0, true);  // Front face
-     renderStrokeTextAtBold("UNIVERSITAS KRISTEN",
+    drawLogo(0.0f, 14.3f, -0.89f, 3.0f, 180, 0, 0, true);  // Front face
+
+    // --- Tulisan: putih saat siang, kuning menyala saat malam & lampu ON, gelap saat malam & lampu OFF ---
+    float textR, textG, textB;
+    if (dayNightTransition <= 0.3f) {
+        // Siang: putih
+        textR = 1.0f; textG = 1.0f; textB = 1.0f;
+    } else if (lampLightOn && (isNightTime || dayNightTransition > 0.3f)) {
+        // Malam & lampu ON: kuning menyala
+        textR = 1.0f; textG = 0.85f; textB = 0.2f;
+    } else {
+        // Malam & lampu OFF: gelap
+        textR = 0.18f; textG = 0.18f; textB = 0.18f;
+    }
+    glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT);
+    glDisable(GL_LIGHTING); // Pakai warna flat biar "menyala"
+    glColor3f(textR, textG, textB);
+    renderStrokeTextAtBold("UNIVERSITAS KRISTEN",
                    -2.0f, 12.1f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
                    0.003f,20);              // Skala teks
-
-     renderStrokeTextAtBold("SATYA WACANA",
+    renderStrokeTextAtBold("SATYA WACANA",
                    -2.0f, 11.5f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
                    0.004f,20);              // Skala teks
+    glPopAttrib();
 
 }
 
