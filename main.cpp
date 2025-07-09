@@ -417,6 +417,21 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 
 
 // ========== KOMPONEN UTAMA ==========
+void drawRoadMarkings() {
+    setRealisticMaterial(0.9f, 0.9f, 0.9f, 0.0f, 0.05f);
+    float lineLength = 4.0f; // Panjang setiap garis putih
+    float gapLength = 5.0f;  // Jarak antar garis
+    float step = lineLength + gapLength;
+
+    // Posisi Y sedikit di atas jalan raya untuk menghindari Z-fighting (glitch)
+    float y_pos = 0.21f;
+
+    // Loop untuk menggambar garis putus-putus di sepanjang sumbu X
+    for (float x = -50.0f; x <= 50.0f; x += step) {
+        // drawBox(posisi_x, posisi_y, posisi_z, panjang, ketebalan, lebar_garis)
+        drawBox(x, y_pos, 30.0f, lineLength, 0.02f, 0.3f);
+    }
+}
 
 void drawGround() {
     // Lapisan 1: Rumput sebagai dasar
@@ -425,12 +440,12 @@ void drawGround() {
 
     // Lapisan 2: Trotoar di depan gerbang
     setRealisticMaterial(0.7f, 0.7f, 0.65f, 0.0f, 0.1f);
-    drawBox(0.0f, 0.0f, 4.0f, 100.0f, 0.2f, 12.0f);
+    drawBox(0.0f, 0.0f, 4.0f, 100.0f, 0.2f, 20.0f);
 
     // Lapisan 3: Jalan raya
 
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
-    drawBox(0.0f, -0.1f, 16.0f, 100.0f, 0.1f, 20.0f);
+    drawBox(0.0f, -0.1f, 20.0f, 100.0f, 0.1f, 50.0f);
 }
 
 void drawMainPillar(float x, float angle) {
@@ -823,7 +838,7 @@ void display() {
     gluLookAt(camX, cameraHeight, camZ, 0, 5, -3, 0, 1, 0);
 
     drawGround();
-
+    drawRoadMarkings();
     drawMainPillar(-13.0f,180.0f);
     drawMainPillar(13.0f,0.0f);
     drawCenterPillar();
@@ -854,10 +869,10 @@ void display() {
     renderCartoonTree3D(22, 0, -10, 1.0f);
 
     //param (x,y,z,scale,RotX,RotY,RotZ)
-    drawLamppost(-25.0f, 0.0f, 6.5f, 0.8f, 0.0f, 45.0f, 0.0f);     // Left far (angled)
-    drawLamppost(25.0f, 0.0f, 6.5f, 0.8f, 0.0f, -45.0f, 0.0f);     // Right far (angled)
-    drawLamppost(12.5f, 0.0f, 6.5f, 1.0f, 0.0f, 180.0f, 0.0f);
-    drawLamppost(-12.5f, 0.0f, 6.5f, 1.0f, 0.0f, 180.0f, 0.0f);
+    drawLamppost(-25.0f, 0.0f, 12.2f, 1.0f, 0.0f, 45.0f, 0.0f);     // Left far (angled)
+    drawLamppost(25.0f, 0.0f, 12.2f, 1.0f, 0.0f, -45.0f, 0.0f);     // Right far (angled)
+    drawLamppost(12.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
+    drawLamppost(-12.5f, 0.0f, 12.2f, 1.0f, 0.0f, 180.0f, 0.0f);
 
 
     drawDecorations();
@@ -983,7 +998,7 @@ void setup() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(45.0, 1.333, 1.0, 100.0);
+    gluPerspective(45.0, 1.333, 1.0, 500.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
