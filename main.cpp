@@ -678,7 +678,7 @@ void drawGround() {
     //jalan kedalam
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, -20.0f, 25.0f, 0.1f, 58.0f);
-    
+
     //trotoar dalam sebelah kiri
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(-14.5f, 0.1f, -26.0f, 5.0f, 0.2f, -40.0f);
@@ -1184,7 +1184,7 @@ void drawGardenBush(float x, float y, float z) {
 
     // Lapisan daun tambahan untuk variasi bentuk dan warna
     setRealisticMaterial(0.3f, 0.7f, 0.3f, 15.0f, 0.2f); // Warna lebih terang
-    
+
     // Bola tambahan di kanan atas
     glPushMatrix();
     glTranslatef(0.4f, 0.3f, 0.3f);
@@ -1431,7 +1431,166 @@ void drawGrassLump(float x, float y, float z) {
     }
     glPopMatrix();
 }
+// ==========================================================
+// ===== IMPLEMENTASI FUNGSI UNTUK TERMINAL BUS ==========
+// ==========================================================
 
+/**
+ * @brief Menggambar pondasi, tangga, dan ramp untuk terminal.
+ */
+void drawTerminalBase(float width, float depth) {
+    glPushMatrix();
+
+    // 1. Lantai Platform Utama (abu-abu muda)
+    setRealisticMaterial(0.7f, 0.7f, 0.7f, 1.0f, 0.1f);
+    drawBox(0.0f, 0.8f, 0.0f, width, 0.4f, depth);
+
+    // 2. Pondasi Batu Kasar (abu-abu gelap)
+    setRealisticMaterial(0.3f, 0.3f, 0.32f, 1.0f, 0.1f);
+    drawBox(0.0f, 0.2f, 0.0f, width + 0.2f, 0.6f, depth + 0.2f);
+
+    // 3. Tangga (3 undakan)
+    setRealisticMaterial(0.6f, 0.6f, 0.6f, 2.0f, 0.1f);
+    for (int i = 0; i < 3; ++i) {
+        drawBox(0.0f, 0.1f + i * 0.2f, (depth/2) + 0.3f + i * 0.3f, width * 0.6f, 0.2f, 0.3f);
+    }
+
+    // 4. Ramp / Jalan Landai di sisi kiri
+    glPushMatrix();
+    glTranslatef(-(width/2) + 0.75f, 0.4f, (depth/2) + 0.75f);
+    glRotatef(20, 0, 1, 0); // Putar sedikit
+    glRotatef(-15, 1, 0, 0); // Miringkan
+    drawBox(0.0f, 0.0f, 0.0f, 1.5f, 0.1f, 2.5f);
+    glPopMatrix();
+
+    // 5. Pinggiran jalan (curb) hitam-putih
+    for (float z = -depth/2; z < depth/2; z += 1.0f) {
+        // Sisi kanan
+        setRealisticMaterial(1.0f, 1.0f, 1.0f, 1.0f, 0.0f); // Putih
+        drawBox(width/2 + 0.2f, 0.1f, z, 0.2f, 0.2f, 0.5f);
+        setRealisticMaterial(0.1f, 0.1f, 0.1f, 1.0f, 0.0f); // Hitam
+        drawBox(width/2 + 0.2f, 0.1f, z + 0.5f, 0.2f, 0.2f, 0.5f);
+    }
+
+    glPopMatrix();
+}
+
+/**
+ * @brief Menggambar pilar-pilar penyangga atap.
+ */
+void drawTerminalPillars(float width, float depth, float height) {
+    glPushMatrix();
+    setRealisticMaterial(0.55f, 0.55f, 0.6f, 5.0f, 0.2f); // Warna batu pilar
+
+    float pillar_w = 0.8f;
+    float pillar_d = 0.8f;
+    float offset_x = width/2 - pillar_w/2;
+    float offset_z = depth/2 - pillar_d/2;
+
+    // Pilar depan kiri
+    drawBox(-offset_x, height/2 + 1.0f, -offset_z, pillar_w, height, pillar_d);
+    // Pilar depan kanan
+    drawBox(offset_x, height/2 + 1.0f, -offset_z, pillar_w, height, pillar_d);
+    // Pilar belakang kiri
+    drawBox(-offset_x, height/2 + 1.0f, offset_z, pillar_w, height, pillar_d);
+    // Pilar belakang kanan
+    drawBox(offset_x, height/2 + 1.0f, offset_z, pillar_w, height, pillar_d);
+
+    glPopMatrix();
+}
+
+/**
+ * @brief Menggambar atap terminal.
+ */
+void drawTerminalRoof(float width, float depth, float height) {
+    glPushMatrix();
+
+    // Posisi Y atap
+    float roof_y = height + 1.0f; // 1.0f adalah tinggi platform
+
+    // 1. Atap utama (putih/abu-abu sangat terang)
+    setRealisticMaterial(0.9f, 0.9f, 0.9f, 10.0f, 0.1f);
+    glPushMatrix();
+    glTranslatef(0, roof_y, 0);
+    glRotatef(3.0f, 1, 0, 0); // Miringkan sedikit ke belakang
+    drawBox(0.0f, 0.0f, 0.0f, width + 2.0f, 0.5f, depth + 2.0f); // Atap lebih besar dari pilar
+    glPopMatrix();
+
+    // 2. Lis kayu/coklat di depan
+    setRealisticMaterial(0.4f, 0.25f, 0.18f, 2.0f, 0.1f);
+    drawBox(0.0f, roof_y + 0.05f, -(depth/2) - 1.0f, width + 2.0f, 0.6f, 0.2f);
+
+    glPopMatrix();
+}
+
+/**
+ * @brief Menggambar detail seperti meja, bangku, dan pagar.
+ */
+void drawTerminalDetails(float width, float depth) {
+    glPushMatrix();
+
+    // 1. Meja Jaga
+    // Bagian bawah (batu gelap)
+    setRealisticMaterial(0.2f, 0.18f, 0.18f, 50.0f, 0.6f);
+    drawBox(width/4, 1.4f, depth/4, 2.5f, 0.8f, 1.5f);
+    // Permukaan meja (abu-abu)
+    setRealisticMaterial(0.5f, 0.5f, 0.5f, 10.0f, 0.2f);
+    drawBox(width/4, 1.85f, depth/4, 2.7f, 0.1f, 1.7f);
+
+    // 2. Dinding/Bangku Samping
+    setRealisticMaterial(0.3f, 0.3f, 0.32f, 1.0f, 0.1f); // Batu gelap
+    // Sisi kiri
+    drawBox(-width/2 + 1.25f, 1.4f, 0.0f, 2.5f, 0.8f, depth);
+    // Sisi kanan
+    drawBox(width/2 - 0.5f, 1.4f, 0.0f, 1.0f, 0.8f, depth);
+    // Bagian atas bangku (untuk duduk)
+    setRealisticMaterial(0.7f, 0.7f, 0.7f, 1.0f, 0.1f); // Abu-abu muda
+    drawBox(-width/2 + 1.25f, 1.85f, 0.0f, 2.5f, 0.1f, depth);
+    drawBox(width/2 - 0.5f, 1.85f, 0.0f, 1.0f, 0.1f, depth);
+
+    // 3. Pagar di Ramp
+    setRealisticMaterial(0.2f, 0.2f, 0.2f, 80.0f, 0.8f); // Besi gelap mengkilap
+    glPushMatrix();
+    glTranslatef(-(width/2) - 0.2f, 1.0f, (depth/2) + 0.75f);
+    glRotatef(20, 0, 1, 0);
+    // Tiang-tiang
+    drawCustomCylinder(0, 0, 0, 0.05f, 1.5f);
+    drawCustomCylinder(0, 0, -1.0f, 0.05f, 1.3f);
+    // Railing atas
+    glPushMatrix();
+    glTranslatef(0, 1.4f, -0.5f);
+    glRotatef(90, 0, 1, 0);
+    glRotatef(-15, 1, 0, 0);
+    drawCustomCylinder(0, 0, 0, 0.05f, 1.2f);
+    glPopMatrix();
+    glPopMatrix();
+
+
+    glPopMatrix();
+}
+
+
+/**
+ * @brief Fungsi utama untuk menggambar seluruh struktur terminal bus.
+ */
+void drawBusTerminal(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // Definisikan dimensi utama struktur
+    float term_width = 12.0f;
+    float term_depth = 8.0f;
+    float term_height = 5.0f; // Tinggi pilar
+
+    // Gambar setiap komponen
+    drawTerminalBase(term_width, term_depth);
+    drawTerminalPillars(term_width, term_depth, term_height);
+    drawTerminalRoof(term_width, term_depth, term_height);
+    drawTerminalDetails(term_width, term_depth);
+
+   
+    glPopMatrix();
+}
 /**
  * @brief Menggambar tanaman berdaun.
  */
@@ -1686,6 +1845,7 @@ void display() {
     drawConnectingBeamAt(.0f, 11.5f, -4.5f); // same default position
     drawConnectingBeamAt(.0f, 11.5f, -5.5f); // same default position
 
+    drawBusTerminal(0.0f, 0.0f, -5.0f);
 
     drawSideWall(20.0f, 4.0f, -4.0f);
     drawSideWallAbove(15.7f, 8.5f, -4.0f);
