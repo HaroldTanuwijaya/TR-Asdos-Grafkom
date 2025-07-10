@@ -675,9 +675,18 @@ void drawGround() {
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, 20.0f, 100.0f, 0.1f, 50.0f);
 
-    //jalan kedalam sebelah kiri
+    //jalan kedalam
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, -20.0f, 25.0f, 0.1f, 58.0f);
+    
+    //trotoar dalam sebelah kiri
+    setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
+    drawBox(-14.5f, 0.1f, -26.0f, 5.0f, 0.2f, -40.0f);
+
+    //trotoar dalam sebelah kanan
+    setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
+    drawBox(14.5f, 0.1f, -26.0f, 5.0f, 0.2f, -40.0f);
+
 
 }
 void drawGreekPillar(float x, float y, float z) {
@@ -1155,6 +1164,45 @@ void drawFountainPool(float x, float y, float z) {
     glPopMatrix();
 }
 
+void drawGardenBush(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // --- Batang Kayu ---
+    // Menggunakan silinder meruncing yang pendek dan berwarna coklat tua.
+    setRealisticMaterial(0.4f, 0.25f, 0.15f, 2.0f, 0.1f);
+    drawTaperedCylinder(0.3f, 0.2f, 1.0f, 8); // radiusBawah, radiusAtas, tinggi, segment
+
+    // --- Dedaunan ---
+    // Dibuat dari beberapa bola hijau yang tumpang tindih untuk tampilan lebat.
+    glPushMatrix();
+    glTranslatef(0.0f, 1.0f, 0.0f); // Posisikan dedaunan di atas batang
+
+    // Lapisan daun utama (hijau sedang)
+    setRealisticMaterial(0.2f, 0.6f, 0.2f, 10.0f, 0.2f);
+    drawColoredSphere(1.0f, 12, 10); // radius, slices, stacks
+
+    // Lapisan daun tambahan untuk variasi bentuk dan warna
+    setRealisticMaterial(0.3f, 0.7f, 0.3f, 15.0f, 0.2f); // Warna lebih terang
+    
+    // Bola tambahan di kanan atas
+    glPushMatrix();
+    glTranslatef(0.4f, 0.3f, 0.3f);
+    glScalef(0.8f, 0.8f, 0.8f); // Buat ukurannya sedikit lebih kecil
+    drawColoredSphere(0.8f, 10, 8);
+    glPopMatrix();
+
+    // Bola tambahan di kiri bawah
+    glPushMatrix();
+    glTranslatef(-0.3f, 0.2f, -0.5f);
+    glScalef(0.7f, 0.7f, 0.7f);
+    drawColoredSphere(0.9f, 10, 8);
+    glPopMatrix();
+
+    glPopMatrix(); // Kembali dari translasi dedaunan
+
+    glPopMatrix(); // Selesai menggambar semak
+}
 
 /**
  * @brief Menggambar tulisan "UKSW" 3D besar di belakang kolam.
@@ -1175,7 +1223,7 @@ void drawUKSWText(float x, float y, float z) {
     glScalef(1.0f, 1.0f, 1.0f);
 
     // Material biru cerah untuk tulisan
-    setRealisticMaterial(0.3f, 0.7f, 1.0f, 20.0f, 0.5f);
+    setRealisticMaterial(0.3f, 0.7f, 1.0f, 0.8f, 0.5f);
 
     // Variabel untuk kontrol ukuran huruf agar mudah diubah
     float letterHeight = 3.5f;
@@ -1622,6 +1670,13 @@ void display() {
     drawPlantPot(22.0f, item_z_pos + 1.5f);
     drawPlantPot(26.0f,item_z_pos + 1.5f);
 
+        drawGardenBush(4.0f, 0.1f, -22.0f);
+    drawGardenBush(-5.0f, 0.1f, -23.0f);
+    drawGardenBush(2.0f, 0.1f, -24.0f);
+    drawGardenBush(4.0f, 0.1f, -20.0f);
+
+
+
 
     drawMainPillar(-13.0f,180.0f);
     drawMainPillar(13.0f,0.0f);
@@ -1650,8 +1705,8 @@ void display() {
      drawPlantPot(-4.0f,item_z_pos -16.5f);
      drawPlantPot(-4.5f,item_z_pos -17.5f);
 
-     drawFountainPool(0.0f, 0.1f, 8.0f);  // (x, y, z) -> (pusat, dasar, depan)
-    drawUKSWText(0.0f, 0.5f, 2.0f);      // (x, y, z) -> (pusat, dasar, di belakang kolam)
+     drawFountainPool(0.0f, 0.1f, -34.0f);  // (x, y, z) -> (pusat, dasar, depan)
+    drawUKSWText(0.0f, 0.5f, -43.0f);      // (x, y, z) -> (pusat, dasar, di belakang kolam)
 
     //greek pillar
     drawGreekPillar(-24.5f, 0.0f, -1.0f); // A pillar on the left
@@ -1668,10 +1723,7 @@ void display() {
     //pohon gede kanan
     renderCartoonTree3D(22, 0, -10, 1.0f);
 
-    //pohon taman belakang
-    renderCartoonTree3D(0, 0, -20, 1.0f);
-    renderCartoonTree3D(3, 0, -25, 1.0f);
-    renderCartoonTree3D(-4, 0, -30, 1.0f);
+
 
     //pot plant
     drawPlanterBox(-40.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f); // x, y, z, lebar, tinggi, kedalaman
