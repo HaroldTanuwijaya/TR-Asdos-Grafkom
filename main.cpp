@@ -1452,16 +1452,8 @@ void drawTerminalBase(float width, float depth) {
     // 3. Tangga (3 undakan)
     setRealisticMaterial(0.6f, 0.6f, 0.6f, 2.0f, 0.1f);
     for (int i = 0; i < 3; ++i) {
-        drawBox(0.0f, 0.1f + i * 0.2f, (depth/2) + 0.3f + i * 0.3f, width * 0.6f, 0.2f, 0.3f);
+        drawBox(0.0f, 0.1f + i * 0.2f, (depth/2) + -9.0f + i * 0.3f, width * 0.6f, 0.2f, 0.3f);
     }
-
-    // 4. Ramp / Jalan Landai di sisi kiri
-    glPushMatrix();
-    glTranslatef(-(width/2) + 0.75f, 0.4f, (depth/2) + 0.75f);
-    glRotatef(20, 0, 1, 0); // Putar sedikit
-    glRotatef(-15, 1, 0, 0); // Miringkan
-    drawBox(0.0f, 0.0f, 0.0f, 1.5f, 0.1f, 2.5f);
-    glPopMatrix();
 
     // 5. Pinggiran jalan (curb) hitam-putih
     for (float z = -depth/2; z < depth/2; z += 1.0f) {
@@ -1553,16 +1545,8 @@ void drawTerminalDetails(float width, float depth) {
     glPushMatrix();
     glTranslatef(-(width/2) - 0.2f, 1.0f, (depth/2) + 0.75f);
     glRotatef(20, 0, 1, 0);
-    // Tiang-tiang
-    drawCustomCylinder(0, 0, 0, 0.05f, 1.5f);
-    drawCustomCylinder(0, 0, -1.0f, 0.05f, 1.3f);
-    // Railing atas
-    glPushMatrix();
-    glTranslatef(0, 1.4f, -0.5f);
-    glRotatef(90, 0, 1, 0);
-    glRotatef(-15, 1, 0, 0);
-    drawCustomCylinder(0, 0, 0, 0.05f, 1.2f);
-    glPopMatrix();
+
+
     glPopMatrix();
 
 
@@ -1573,9 +1557,14 @@ void drawTerminalDetails(float width, float depth) {
 /**
  * @brief Fungsi utama untuk menggambar seluruh struktur terminal bus.
  */
-void drawBusTerminal(float x, float y, float z) {
+void drawBusTerminal(float x, float y, float z, float angleX, float angleY, float angleZ) {
     glPushMatrix();
     glTranslatef(x, y, z);
+
+    // Tambahkan rotasi pada sumbu Y, X, dan Z
+    glRotatef(angleY, 0.0f, 1.0f, 0.0f); // Rotasi Yaw
+    glRotatef(angleX, 1.0f, 0.0f, 0.0f); // Rotasi Pitch
+    glRotatef(angleZ, 0.0f, 0.0f, 1.0f); // Rotasi Roll
 
     // Definisikan dimensi utama struktur
     float term_width = 12.0f;
@@ -1587,7 +1576,6 @@ void drawBusTerminal(float x, float y, float z) {
     drawTerminalPillars(term_width, term_depth, term_height);
     drawTerminalRoof(term_width, term_depth, term_height);
     drawTerminalDetails(term_width, term_depth);
-
    
     glPopMatrix();
 }
@@ -1845,7 +1833,7 @@ void display() {
     drawConnectingBeamAt(.0f, 11.5f, -4.5f); // same default position
     drawConnectingBeamAt(.0f, 11.5f, -5.5f); // same default position
 
-    drawBusTerminal(0.0f, 0.0f, -5.0f);
+    drawBusTerminal(25.0f, 0.0f, -26.0f,0.0f,90.0f,0.0f);
 
     drawSideWall(20.0f, 4.0f, -4.0f);
     drawSideWallAbove(15.7f, 8.5f, -4.0f);
