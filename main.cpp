@@ -546,6 +546,105 @@ void renderStrokeTextAtBold(const char* text, float x, float y, float z,
 
 
 // ========== KOMPONEN UTAMA ==========
+/**
+ * @brief Menggambar gedung bank dua lantai seperti pada gambar referensi.
+ * @param x Posisi X dunia (pusat bangunan).
+ * @param y Posisi Y dunia (dasar bangunan).
+ * @param z Posisi Z dunia (pusat bangunan).
+ */
+/**
+ * @brief Menggambar gedung bank dua lantai dengan 4 mesin ATM.
+ * @param x Posisi X dunia (pusat bangunan).
+ * @param y Posisi Y dunia (dasar bangunan).
+ * @param z Posisi Z dunia (pusat bangunan).
+ */
+/**
+ * @brief Menggambar gedung bank dengan 4 ATM dan parameter rotasi.
+ * @param x Posisi X dunia (pusat bangunan).
+ * @param y Posisi Y dunia (dasar bangunan).
+ * @param z Posisi Z dunia (pusat bangunan).
+ * @param angleY Sudut rotasi pada sumbu Y (dalam derajat).
+ */
+void drawBankBuilding(float x, float y, float z, float angleY) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    // Tambahkan rotasi pada sumbu Y
+    glRotatef(angleY, 0.0f, 1.0f, 0.0f);
+
+    // --- Lantai 1 (Area Bawah & Pilar) ---
+    setRealisticMaterial(0.8f, 0.8f, 0.8f, 5.0f, 0.1f); // Abu-abu terang untuk pilar
+    drawBox(-7.0f, 2.5f, 0.0f, 2.0f, 5.0f, 8.0f); // Pilar kiri
+    drawBox(7.0f, 2.5f, 0.0f, 2.0f, 5.0f, 8.0f);  // Pilar kanan
+
+    // Dinding Kaca (disimulasikan dengan box gelap)
+    setRealisticMaterial(0.1f, 0.15f, 0.2f, 0.0f, 0.8f); // Kaca gelap reflektif
+    drawBox(0.0f, 2.5f, -0.5f, 12.0f, 4.8f, 7.0f);
+
+    // --- Area 4 Mesin ATM ---
+    setRealisticMaterial(0.35f, 0.4f, 0.45f, 0.0f, 0.1f); // Abu-abu netral
+    drawBox(0.0f, 2.4f, 3.4f, 11.5f, 4.8f, 0.4f);
+
+    float startX = -4.5f;
+    float atmWidth = 2.0f;
+    float atmSpacing = 1.0f;
+
+    for (int i = 0; i < 4; ++i) {
+        float currentX = startX + i * (atmWidth + atmSpacing);
+        glPushMatrix();
+        glTranslatef(currentX, 0.0f, 0.0f);
+        setRealisticMaterial(0.1f, 0.4f, 0.8f, 0.0f, 0.3f);
+        drawBox(0.0f, 2.0f, 3.7f, atmWidth, 4.0f, 0.5f);
+        setRealisticMaterial(0.1f, 0.8f, 1.0f, 0.0f, 0.9f);
+        drawBox(0.0f, 3.0f, 4.0f, 1.4f, 1.2f, 0.1f);
+        setRealisticMaterial(0.1f, 0.1f, 0.1f, 1.0f, 0.1f);
+        drawBox(0.0f, 1.5f, 4.0f, 1.0f, 0.3f, 0.1f);
+        drawBox(0.0f, 0.8f, 4.0f, 1.4f, 0.3f, 0.1f);
+        glPopMatrix();
+    }
+
+    // --- Lantai 2 (Dinding Putih Atas) ---
+    setRealisticMaterial(0.95f, 0.95f, 0.93f, 5.0f, 0.1f); // Putih bersih
+    drawBox(0.0f, 7.5f, 0.0f, 16.0f, 5.0f, 8.5f);
+
+    // Jendela Lantai 2
+    setRealisticMaterial(0.1f, 0.15f, 0.2f, 20.0f, 0.8f);
+    drawBox(0.0f, 8.0f, 4.3f, 14.0f, 3.0f, 0.2f);
+
+    // // --- Atap ---
+    // setRealisticMaterial(0.6f, 0.25f, 0.2f, 2.0f, 0.1f); // Warna genteng
+
+    // // Sisi Kanan Atap
+    // glPushMatrix();
+    // glTranslatef(4.5f, 11.5f, 0.0f);
+    // glRotatef(45.0f, 0.0f, 0.0f, 1.0f);
+    // drawBox(0.0f, 0.0f, 0.0f, 9.0f, 1.0f, 9.5f);
+    // glPopMatrix();
+
+    // // Sisi Kiri Atap
+    // glPushMatrix();
+    // glTranslatef(-4.5f, 11.5f, 0.0f);
+    // glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
+    // drawBox(0.0f, 0.0f, 0.0f, 9.0f, 1.0f, 9.5f);
+    // glPopMatrix();
+
+    // // Dinding Segitiga Penutup Atap
+    // setRealisticMaterial(0.95f, 0.95f, 0.93f, 5.0f, 0.1f);
+    // glBegin(GL_TRIANGLES);
+    //     // Depan
+    //     glNormal3f(0.0, 0.0, 1.0);
+    //     glVertex3f(-8.0f, 10.0f, 4.25f);
+    //     glVertex3f(8.0f, 10.0f, 4.25f);
+    //     glVertex3f(0.0f, 15.0f, 4.25f);
+    //     // Belakang
+    //     glNormal3f(0.0, 0.0, -1.0);
+    //     glVertex3f(-8.0f, 10.0f, -4.25f);
+    //     glVertex3f(8.0f, 10.0f, -4.25f);
+    //     glVertex3f(0.0f, 15.0f, -4.25f);
+    // glEnd();
+
+    glPopMatrix();
+}
+
 void drawRoadMarkings() {
     setRealisticMaterial(0.9f, 0.9f, 0.9f, 0.0f, 0.05f);
     float lineLength = 4.0f; // Panjang setiap garis putih
@@ -575,6 +674,11 @@ void drawGround() {
 
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, 20.0f, 100.0f, 0.1f, 50.0f);
+
+    //jalan kedalam sebelah kiri
+    setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
+    drawBox(0.0f, -0.1f, -20.0f, 25.0f, 0.1f, 58.0f);
+    
 }
 void drawGreekPillar(float x, float y, float z) {
     glPushMatrix();
@@ -1382,6 +1486,8 @@ void display() {
     drawGreekPillar(19.0f, 0.0f, -1.0f);
     drawGreekPillar(22.0f, 0.0f, -1.0f);
     drawGreekPillar(24.0f, 0.0f, -1.0f);
+
+     drawBankBuilding(-25.0f, 0.0f, -22.0f, 90.0f);
 
     //pohon gede kiri
     renderCartoonTree3D(-22, 0, -10, 1.0f);
