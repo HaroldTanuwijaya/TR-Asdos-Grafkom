@@ -678,7 +678,7 @@ void drawGround() {
     //jalan kedalam sebelah kiri
     setRealisticMaterial(0.2f, 0.2f, 0.22f, 0.0f, 0.2f);
     drawBox(0.0f, -0.1f, -20.0f, 25.0f, 0.1f, 58.0f);
-    
+
 }
 void drawGreekPillar(float x, float y, float z) {
     glPushMatrix();
@@ -784,7 +784,7 @@ void drawCenterPillar() {
                    -2.6f, 6.0f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
                    0.008f,20);              // Skala teks
-    
+
     renderStrokeTextAtBold("Mini",
                    0.5f, 5.5f, -1.1f, //posisi x,y,z
                    0, 0, 0,    // Rotasi X, Y, Z
@@ -1078,7 +1078,167 @@ void drawTiangBendera(float x, float z) {
 
     glPopMatrix();
 }
+// ========== KOMPONEN TAMBAHAN (SESUAI GAMBAR REFERENSI) ==========
 
+/**
+ * @brief Menggambar kolam air mancur sesuai gambar referensi.
+ * @param x Posisi X dunia (pusat kolam).
+ * @param y Posisi Y dunia (dasar kolam).
+ * @param z Posisi Z dunia (pusat kolam).
+ */
+void drawFountainPool(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+
+    // --- 1. Basin Kolam Utama ---
+    setRealisticMaterial(0.7f, 0.7f, 0.65f, 5.0f, 0.1f); // Warna batu/beton
+    // Dinding luar
+    drawCustomCylinder(0.0f, 0.0f, 0.0f, 8.0f, 1.0f, 64);
+    // Dinding dalam
+    drawCustomCylinder(0.0f, 0.0f, 0.0f, 7.5f, 1.0f, 64);
+
+    // Lantai kolam (di bawah air)
+    glPushMatrix();
+    glRotatef(-90, 1, 0, 0);
+    gluDisk(gluNewQuadric(), 0, 7.5, 64, 1);
+    glPopMatrix();
+
+
+    // --- 2. Air Kolam (Dengan Transparansi) ---
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Material untuk air: hijau kebiruan, 70% opacity
+    GLfloat waterAmbient[] = {0.1f, 0.3f, 0.25f, 0.7f};
+    GLfloat waterDiffuse[] = {0.2f, 0.6f, 0.5f, 0.7f};
+    GLfloat waterSpecular[] = {0.8f, 0.9f, 0.85f, 0.7f};
+    glMaterialfv(GL_FRONT, GL_AMBIENT, waterAmbient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, waterDiffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, waterSpecular);
+    glMaterialf(GL_FRONT, GL_SHININESS, 80.0f);
+
+    glPushMatrix();
+    glTranslatef(0, 0.8f, 0); // Posisikan permukaan air sedikit di bawah bibir kolam
+    glRotatef(-90, 1, 0, 0);
+    gluDisk(gluNewQuadric(), 0, 7.5, 64, 1);
+    glPopMatrix();
+
+    glDisable(GL_BLEND); // Matikan blending setelah selesai
+
+
+    // --- 3. Struktur Air Mancur Tengah ---
+    setRealisticMaterial(0.6f, 0.6f, 0.6f, 5.0f, 0.2f); // Abu-abu batu
+    // Base lebar
+    drawCustomCylinder(0.0f, 0.0f, 0.0f, 2.5f, 0.5f, 16);
+    // Tingkat kedua
+    drawCustomCylinder(0.0f, 0.5f, 0.0f, 2.0f, 1.5f, 16);
+    // Bagian tengah dengan logo
+    drawBox(0.0f, 2.5f, 0.0f, 1.5f, 2.0f, 1.5f);
+    // Logo di sisi depan
+    drawLogo(0.0f, 2.5f, 0.76f, 1.4f, 0, 0, 0, true);
+    // Tingkat atas
+    drawCustomCylinder(0.0f, 3.5f, 0.0f, 1.8f, 0.5f, 16);
+
+    // --- 4. Simulasi Pancaran Air ---
+    setRealisticMaterial(0.8f, 0.9f, 1.0f, 100.0f, 0.9f); // Warna air mancur putih kebiruan
+    // Pancaran utama
+    drawTaperedCylinder(0.1f, 0.02f, 4.0f, 8);
+    // Pancaran kecil di sekitar
+    for (int i = 0; i < 8; ++i) {
+        glPushMatrix();
+        glRotatef(i * 45.0f, 0, 1, 0); // Putar di sekitar sumbu Y
+        glTranslatef(1.5f, 1.8f, 0.0f); // Pindahkan ke pinggir
+        glRotatef(-20, 0, 0, 1); // Arahkan sedikit keluar
+        drawTaperedCylinder(0.05f, 0.01f, 2.0f, 6);
+        glPopMatrix();
+    }
+
+    glPopMatrix();
+}
+
+
+/**
+ * @brief Menggambar tulisan "UKSW" 3D besar di belakang kolam.
+ * @param x Posisi X dunia (pusat tulisan).
+ * @param y Posisi Y dunia (dasar tulisan).
+ * @param z Posisi Z dunia (pusat tulisan).
+ */
+void drawUKSWText(float x, float y, float z) {
+    glPushMatrix();
+    glTranslatef(x, y, z);
+    glScalef(1.5f, 1.5f, 1.5f); // Buat tulisan lebih besar
+
+    // Material biru cerah untuk tulisan
+    setRealisticMaterial(0.3f, 0.7f, 1.0f, 20.0f, 0.5f);
+    float depth = 1.0f; // Ketebalan huruf
+
+    // --- Huruf U ---
+    glPushMatrix();
+    glTranslatef(-7.5f, 0.0f, 0.0f);
+    drawBox(0.0f, 1.5f, 0.0f, 3.0f, 0.8f, depth); // Bawah
+    drawBox(-1.1f, 3.5f, 0.0f, 0.8f, 4.0f, depth); // Kiri
+    drawBox(1.1f, 3.5f, 0.0f, 0.8f, 4.0f, depth); // Kanan
+    glPopMatrix();
+
+    // --- Huruf K ---
+    glPushMatrix();
+    glTranslatef(-3.0f, 0.0f, 0.0f);
+    drawBox(-0.8f, 3.5f, 0.0f, 0.8f, 6.0f, depth); // Tiang Vertikal
+    // Diagonal Atas
+    glPushMatrix();
+    glTranslatef(0.0f, 3.5f, 0.0f);
+    glRotatef(45.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth);
+    glPopMatrix();
+    // Diagonal Bawah
+    glPushMatrix();
+    glTranslatef(0.0f, 3.5f, 0.0f);
+    glRotatef(-45.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth);
+    glPopMatrix();
+    glPopMatrix();
+
+    // --- Huruf S ---
+    glPushMatrix();
+    glTranslatef(2.5f, 0.0f, 0.0f);
+    drawBox(0.0f, 5.6f, 0.0f, 3.0f, 0.8f, depth); // Atas
+    drawBox(-1.1f, 4.2f, 0.0f, 0.8f, 2.0f, depth); // Kiri atas
+    drawBox(0.0f, 2.8f, 0.0f, 3.0f, 0.8f, depth); // Tengah
+    drawBox(1.1f, 1.4f, 0.0f, 0.8f, 2.0f, depth); // Kanan bawah
+    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth); // Bawah
+    glPopMatrix();
+
+    // --- Huruf W ---
+    glPushMatrix();
+    glTranslatef(7.5f, 0.0f, 0.0f);
+     // Kaki Kiri
+    glPushMatrix();
+    glTranslatef(-1.2f, 2.8f, 0.0f);
+    glRotatef(15.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 6.0f, depth);
+    glPopMatrix();
+     // Kaki Kiri-Tengah
+    glPushMatrix();
+    glTranslatef(-0.4f, 1.0f, 0.0f);
+    glRotatef(-15.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 4.0f, depth);
+    glPopMatrix();
+     // Kaki Kanan-Tengah
+    glPushMatrix();
+    glTranslatef(0.4f, 1.0f, 0.0f);
+    glRotatef(15.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 4.0f, depth);
+    glPopMatrix();
+     // Kaki Kanan
+    glPushMatrix();
+    glTranslatef(1.2f, 2.8f, 0.0f);
+    glRotatef(-15.0f, 0, 0, 1);
+    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 6.0f, depth);
+    glPopMatrix();
+    glPopMatrix();
+
+
+    glPopMatrix();
+}
 // Fungsi untuk menggambar satu pot bunga beserta tanamannya
 void drawPlantPot(float x, float z) {
     glPushMatrix();
@@ -1196,17 +1356,17 @@ void drawGrassLump(float x, float y, float z) {
     int numBlades = 20; // Jumlah helai rumput per gumpalan
     for (int i = 0; i < numBlades; ++i) {
         glPushMatrix();
-        
+
         // Warna hijau rumput dengan sedikit variasi
         setRealisticMaterial(0.1f + (rand() % 10) / 80.0f, 0.4f + (rand() % 20) / 100.0f, 0.1f, 2.0f, 0.05f);
-        
+
         // Rotasi acak agar rumput tidak seragam
         glRotatef(((rand() % 40) - 20), 1.0f, 0.0f, 0.0f);
         glRotatef(((rand() % 40) - 20), 0.0f, 0.0f, 1.0f);
 
         float height = 0.8f + ((rand() % 100) / 100.0f) * 0.5f;
         drawTaperedCylinder(0.02f, 0.005f, height, 4); // Gambar helai rumput sebagai silinder tipis
-        
+
         glPopMatrix();
     }
     glPopMatrix();
@@ -1283,7 +1443,7 @@ void drawLushPlanterBox(float x, float y, float z, float width, float height, fl
     for (int i = 0; i < numPlants; ++i) {
         float plantX = ((rand() % 100) / 100.0f - 0.5f) * width * 0.9f;
         float plantZ = ((rand() % 100) / 100.0f - 0.5f) * depth * 0.9f;
-        
+
         // Pilih jenis tanaman secara acak
         int plantType = rand() % 5; // Probabilitas 3:2 untuk rumput vs tanaman daun
         if (plantType < 3) {
@@ -1423,7 +1583,7 @@ void display() {
     drawCustomCylinder(20.0f, 0.0f, 10.0f-3, 0.3f , 2.0f , 32);
     drawCustomCylinder(20.0f, 0.0f, 12.0f-3, 0.3f , 2.0f , 32);
     //float x, float y, float z, float radius, float height, int segments = 32
-    
+
     // Pagar di sisi kiri
     for(float x = -50.0f; x <= -18.0f; x += 5.0f) {
         glPushMatrix();
@@ -1478,8 +1638,10 @@ void display() {
      drawPlantPot(-4.0f,item_z_pos -16.5f);
      drawPlantPot(-4.5f,item_z_pos -17.5f);
 
+     drawFountainPool(0.0f, 0.1f, 8.0f);  // (x, y, z) -> (pusat, dasar, depan)
+    drawUKSWText(0.0f, 0.5f, 2.0f);      // (x, y, z) -> (pusat, dasar, di belakang kolam)
 
-    //greek pillar 
+    //greek pillar
     drawGreekPillar(-24.5f, 0.0f, -1.0f); // A pillar on the left
     drawGreekPillar(-22.0f, 0.0f, -1.0f);  // A pillar on the right
     drawGreekPillar(-19.0f, 0.0f, -1.0f);
@@ -1507,7 +1669,7 @@ void display() {
     drawPlanterBox(-30.0f, 0.0f, -4.0f, 8.0f, 2.0f, 2.5f);
 
     // drawLushPlanterBox(-12.0f, 0.0f, 8.0f, 8.0f, 1.5f, 2.5f); // Pot di kiri
-    // drawLushPlanterBox(12.0f, 0.0f, 8.0f, 8.0f, 1.5f, 2.5f); 
+    // drawLushPlanterBox(12.0f, 0.0f, 8.0f, 8.0f, 1.5f, 2.5f);
 
 
     //param (x,y,z,scale,RotX,RotY,RotZ)
