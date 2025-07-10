@@ -1162,80 +1162,92 @@ void drawFountainPool(float x, float y, float z) {
  * @param y Posisi Y dunia (dasar tulisan).
  * @param z Posisi Z dunia (pusat tulisan).
  */
+/**
+ * @brief Menggambar tulisan "UKSW" 3D besar di belakang kolam. (VERSI DIPERBAIKI)
+ * @param x Posisi X dunia (pusat tulisan).
+ * @param y Posisi Y dunia (dasar tulisan).
+ * @param z Posisi Z dunia (pusat tulisan).
+ */
 void drawUKSWText(float x, float y, float z) {
     glPushMatrix();
     glTranslatef(x, y, z);
-    glScalef(1.5f, 1.5f, 1.5f); // Buat tulisan lebih besar
+    // Ukuran diperkecil dari 1.5f menjadi 1.0f untuk tampilan yang lebih pas
+    glScalef(1.0f, 1.0f, 1.0f);
 
     // Material biru cerah untuk tulisan
     setRealisticMaterial(0.3f, 0.7f, 1.0f, 20.0f, 0.5f);
-    float depth = 1.0f; // Ketebalan huruf
+
+    // Variabel untuk kontrol ukuran huruf agar mudah diubah
+    float letterHeight = 3.5f;
+    float letterWidth  = 2.5f;
+    float thickness    = 0.7f;
+    float spacing      = 4.5f; // Jarak antar huruf
 
     // --- Huruf U ---
     glPushMatrix();
-    glTranslatef(-7.5f, 0.0f, 0.0f);
-    drawBox(0.0f, 1.5f, 0.0f, 3.0f, 0.8f, depth); // Bawah
-    drawBox(-1.1f, 3.5f, 0.0f, 0.8f, 4.0f, depth); // Kiri
-    drawBox(1.1f, 3.5f, 0.0f, 0.8f, 4.0f, depth); // Kanan
+    glTranslatef(-spacing * 1.5f, 0.0f, 0.0f); // Posisi huruf U
+    drawBox(0, thickness / 2, 0, letterWidth, thickness, thickness); // Bagian bawah
+    drawBox(-(letterWidth-thickness)/2, letterHeight/2, 0, thickness, letterHeight - thickness, thickness); // Kaki kiri
+    drawBox((letterWidth-thickness)/2, letterHeight/2, 0, thickness, letterHeight - thickness, thickness); // Kaki kanan
     glPopMatrix();
 
     // --- Huruf K ---
     glPushMatrix();
-    glTranslatef(-3.0f, 0.0f, 0.0f);
-    drawBox(-0.8f, 3.5f, 0.0f, 0.8f, 6.0f, depth); // Tiang Vertikal
-    // Diagonal Atas
+    glTranslatef(-spacing * 0.5f, 0.0f, 0.0f); // Posisi huruf K
+    drawBox(-(letterWidth/2) + thickness, letterHeight/2, 0, thickness, letterHeight, thickness); // Tiang vertikal
+    // Diagonal atas
     glPushMatrix();
-    glTranslatef(0.0f, 3.5f, 0.0f);
-    glRotatef(45.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth);
+    glTranslatef(0.1f, letterHeight/2 + 0.5f, 0); // Pivot rotasi di tengah
+    glRotatef(45, 0, 0, 1);
+    drawBox(0, 0, 0, letterHeight/1.5f, thickness, thickness);
     glPopMatrix();
-    // Diagonal Bawah
+    // Diagonal bawah
     glPushMatrix();
-    glTranslatef(0.0f, 3.5f, 0.0f);
-    glRotatef(-45.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth);
+    glTranslatef(0.1f, letterHeight/2 - 0.5f, 0); // Pivot rotasi di tengah
+    glRotatef(-45, 0, 0, 1);
+    drawBox(0, 0, 0, letterHeight/1.5f, thickness, thickness);
     glPopMatrix();
     glPopMatrix();
 
     // --- Huruf S ---
     glPushMatrix();
-    glTranslatef(2.5f, 0.0f, 0.0f);
-    drawBox(0.0f, 5.6f, 0.0f, 3.0f, 0.8f, depth); // Atas
-    drawBox(-1.1f, 4.2f, 0.0f, 0.8f, 2.0f, depth); // Kiri atas
-    drawBox(0.0f, 2.8f, 0.0f, 3.0f, 0.8f, depth); // Tengah
-    drawBox(1.1f, 1.4f, 0.0f, 0.8f, 2.0f, depth); // Kanan bawah
-    drawBox(0.0f, 0.0f, 0.0f, 3.0f, 0.8f, depth); // Bawah
+    glTranslatef(spacing * 0.5f, 0.0f, 0.0f); // Posisi huruf S
+    drawBox(0, letterHeight - thickness/2, 0, letterWidth, thickness, thickness); // Atas
+    drawBox(-(letterWidth-thickness)/2, letterHeight - thickness*1.5, 0, thickness, thickness, thickness); // Kiri atas
+    drawBox(0, letterHeight/2, 0, letterWidth, thickness, thickness); // Tengah
+    drawBox((letterWidth-thickness)/2, thickness*1.5, 0, thickness, thickness, thickness); // Kanan bawah
+    drawBox(0, thickness/2, 0, letterWidth, thickness, thickness); // Bawah
     glPopMatrix();
 
     // --- Huruf W ---
     glPushMatrix();
-    glTranslatef(7.5f, 0.0f, 0.0f);
-     // Kaki Kiri
+    glTranslatef(spacing * 1.5f, 0.0f, 0.0f); // Posisi huruf W
+    float angleW = 12.0f;
+    // Kaki kiri luar
     glPushMatrix();
-    glTranslatef(-1.2f, 2.8f, 0.0f);
-    glRotatef(15.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 6.0f, depth);
+    glTranslatef(-1.2f, letterHeight/2, 0);
+    glRotatef(angleW, 0, 0, 1);
+    drawBox(0, 0, 0, thickness, letterHeight, thickness);
     glPopMatrix();
-     // Kaki Kiri-Tengah
+    // Kaki kiri dalam
     glPushMatrix();
-    glTranslatef(-0.4f, 1.0f, 0.0f);
-    glRotatef(-15.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 4.0f, depth);
+    glTranslatef(-0.4f, (letterHeight-thickness)/4, 0);
+    glRotatef(-angleW, 0, 0, 1);
+    drawBox(0, 0, 0, thickness, (letterHeight-thickness)/2, thickness);
     glPopMatrix();
-     // Kaki Kanan-Tengah
+    // Kaki kanan dalam
     glPushMatrix();
-    glTranslatef(0.4f, 1.0f, 0.0f);
-    glRotatef(15.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 4.0f, depth);
+    glTranslatef(0.4f, (letterHeight-thickness)/4, 0);
+    glRotatef(angleW, 0, 0, 1);
+    drawBox(0, 0, 0, thickness, (letterHeight-thickness)/2, thickness);
     glPopMatrix();
-     // Kaki Kanan
+    // Kaki kanan luar
     glPushMatrix();
-    glTranslatef(1.2f, 2.8f, 0.0f);
-    glRotatef(-15.0f, 0, 0, 1);
-    drawBox(0.0f, 0.0f, 0.0f, 0.8f, 6.0f, depth);
+    glTranslatef(1.2f, letterHeight/2, 0);
+    glRotatef(-angleW, 0, 0, 1);
+    drawBox(0, 0, 0, thickness, letterHeight, thickness);
     glPopMatrix();
     glPopMatrix();
-
 
     glPopMatrix();
 }
